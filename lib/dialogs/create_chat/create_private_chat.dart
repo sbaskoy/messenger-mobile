@@ -82,12 +82,9 @@ class _CreatePrivateChatWidgetState extends State<CreatePrivateChatWidget> {
                     ),
                     Positioned(
                       right: 0,
-                      child: InkWell(
-                        onTap: Get.back,
-                        child: const Padding(
-                          padding: EdgeInsets.only(right: 20.0),
-                          child: Icon(Icons.close),
-                        ),
+                      child: TextButton(
+                        onPressed: Get.back,
+                        child: const Text("Cancel"),
                       ),
                     ),
                   ],

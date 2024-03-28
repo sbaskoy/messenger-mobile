@@ -31,14 +31,18 @@ class _CreateGroupChatWidgetState extends State<CreateGroupChatWidget> {
             children: [
               SizedBox(
                 width: Get.width,
-                child: widget.createGroupChatController.groupMembers.builder(
+                height: 50,
+                child: widget.createGroupChatController.activeCreateButton.builder(
                   AppUtils.sStateBuilder(
                     (data) => Stack(
                       alignment: Alignment.center,
                       children: [
                         Positioned(
                           left: 8,
-                          child: InkWell(onTap: widget.onCancel, child: const Text("Cancel")),
+                          child: TextButton(
+                            onPressed: widget.onCancel,
+                            child: const Text("Cancel"),
+                          ),
                         ),
                         Text(
                           "New Group",
@@ -47,22 +51,20 @@ class _CreateGroupChatWidgetState extends State<CreateGroupChatWidget> {
                               ),
                         ),
                         Positioned(
-                          right: 8,
-                          child: InkWell(
-                              onTap: () {
-                                if (data.isNotEmpty) {
+                            right: 8,
+                            child: TextButton(
+                              child: Text(
+                                "Create",
+                                style: TextStyle(
+                                  color: !data ? Theme.of(context).disabledColor : null,
+                                ),
+                              ),
+                              onPressed: () {
+                                if (data == true) {
                                   widget.createGroupChatController.create();
                                 }
                               },
-                              child: Text(
-                                "Create",
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: data.isEmpty
-                                          ? Theme.of(context).disabledColor
-                                          : Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                              )),
-                        ),
+                            )),
                       ],
                     ),
                   ),

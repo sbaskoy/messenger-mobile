@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Planner Messenger',
       debugShowCheckedModeBanner: false,
-      theme: FlexThemeData.dark(scheme: FlexScheme.aquaBlue),
+      theme: FlexThemeData.dark(scheme: FlexScheme.tealM3),
       builder: (context, child) {
         return CloseKeyboardWidget(
           child: AppProgressIndicator(child: child!),

@@ -9,7 +9,7 @@ import 'package:transparent_image/transparent_image.dart';
 import 'file_select_dialog_controller.dart';
 
 class FileSelectDialog extends StatefulWidget {
-  final void Function(List<File> selected)? onSelected;
+  final void Function(List<IFilePickerItem> selected)? onSelected;
   final bool canSelectFile;
   const FileSelectDialog({super.key, this.onSelected, this.canSelectFile = true});
 

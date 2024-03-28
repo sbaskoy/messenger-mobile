@@ -9,14 +9,16 @@ import '../../utils/app_utils.dart';
 import '../chat_message/message_view.dart';
 
 class ChatListWidget extends StatelessWidget {
+  final ScrollController scrollController;
   final List<Chat> chats;
-  const ChatListWidget({super.key, required this.chats});
+  const ChatListWidget({super.key, required this.chats, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 8),
       child: AppUtils.appListView(
+        scrollController: scrollController,
         items: chats,
         builder: (context, index, item) {
           // var isPrivate = item.chatType == ChatType.private;
@@ -35,7 +37,7 @@ class ChatListWidget extends StatelessWidget {
                   child: photoUrl == null ? const Icon(Icons.person) : null,
                 ),
                 title: Text(
-                  item.name ?? "",
+                  item.getChatName(),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 subtitle: _buildSubTitle(context, item),

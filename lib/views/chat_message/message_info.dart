@@ -22,6 +22,7 @@ class MessageInfoView extends StatelessWidget {
         children: [
           SizedBox(
             child: ChatMessageBubble(
+              canSwipe: false,
               message: message,
             ),
           ),

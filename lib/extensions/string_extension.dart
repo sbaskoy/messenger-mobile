@@ -1,5 +1,12 @@
 import 'package:intl/intl.dart';
 
+class CustomDateFormats {
+  CustomDateFormats._();
+  static String get yyyyMMddHHmm => "dd-MM-yyyy HH:mm";
+  static String get yyyyMMdd => "dd-MM-yyyy HH:mm";
+  static String get hHmm => "HH:mm";
+}
+
 extension StringExtension on String? {
   String relativeDate({bool showToday = false}) {
     DateTime now = DateTime.now();
@@ -26,7 +33,7 @@ extension StringExtension on String? {
   }
 
   String dateFormat([String? formatStr]) {
-    var format = DateFormat(formatStr ?? "yyyy-MM-dd");
+    var format = DateFormat(formatStr ?? CustomDateFormats.yyyyMMdd);
     var date = DateTime.tryParse(this ?? "")?.toLocal();
     if (date == null) return "";
     return format.format(date);

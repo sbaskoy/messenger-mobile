@@ -1,6 +1,8 @@
 import 'package:planner_messenger/constants/app_controllers.dart';
 import 'package:planner_messenger/models/auth/user.dart';
+import 'package:planner_messenger/models/chats/chat_user.dart';
 import 'package:planner_messenger/models/message/message.dart';
+import 'package:planner_messenger/utils/app_utils.dart';
 
 import '../file_model.dart';
 
@@ -17,6 +19,7 @@ class Chat {
   String? projectId;
   String? taskId;
   int? creatorUserId;
+  int? memberUserId;
   String? pinnedMessageId;
   int? isDeleted;
   int? isArchived;
@@ -27,6 +30,7 @@ class Chat {
   User? memberUser;
   FileModel? photo;
   Message? pinnedMessage;
+  List<ChatUser>? users;
 
   Chat({
     this.id,
@@ -41,6 +45,8 @@ class Chat {
     this.messages,
     this.unSeenCount = 0,
     this.pinnedMessage,
+    this.users,
+    this.memberUserId,
   });
 
   Chat.fromJson(Map<String, dynamic> json) {
@@ -50,12 +56,17 @@ class Chat {
     projectId = json['project_id'];
     taskId = json['task_id'];
     creatorUserId = json['creator_user_id'];
+    memberUserId = json['member_user_id'];
     pinnedMessageId = json['pinned_message_id'].toString();
     isDeleted = json['is_deleted'];
     isArchived = json['is_archived'];
     var jsonMessages = json["messages"];
     if (jsonMessages is List) {
       messages = jsonMessages.map((e) => Message.fromJson(e)).toList();
+    }
+    var jsonUsers = json["users"];
+    if (jsonUsers is List) {
+      users = jsonUsers.map((e) => ChatUser.fromJson(e)).toList();
     }
     var jsonCreatorUser = json["creator_user"];
     if (jsonCreatorUser != null) {
@@ -90,12 +101,22 @@ class Chat {
 
   String? getPhotoUrl() {
     var user = AppControllers.auth.user;
-    if (photo?.fileLink != null) {
-      return photo!.fileLink?.replaceAll(("viewFile/user_token"), "viewImage/${user?.id}-${user?.tenantId}");
+    if (chatType == ChatType.group) {
+      return AppUtils.getImageUrl(photo?.fileLink);
     }
-    if (memberUser?.photo != null) {
-      return memberUser?.photo?.replaceAll("viewFile/user_token", "viewImage/${user?.id}-${user?.tenantId}");
+    if (creatorUserId == user?.id) {
+      return AppUtils.getImageUrl(memberUser?.photo);
+    } else {
+      return AppUtils.getImageUrl(creatorUser?.photo);
     }
-    return null;
+  }
+
+  int? getPrivateChatMemberId() {
+    return creatorUserId == AppControllers.auth.user?.id ? memberUserId : creatorUserId;
+  }
+
+  String getChatName() {
+    if (chatType == ChatType.group) return name ?? "";
+    return creatorUserId == AppControllers.auth.user?.id ? (memberUser?.fullName ?? "") : (creatorUser?.fullName ?? "");
   }
 }

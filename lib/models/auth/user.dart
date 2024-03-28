@@ -9,7 +9,7 @@ class User {
 
   User({this.id, this.email, this.username, this.banned, this.photo});
 
-  User.fromJson(Map<String, dynamic> json) {
+  User.fromJson(json) {
     id = json['id'];
     email = json['email'];
     username = json['username'];

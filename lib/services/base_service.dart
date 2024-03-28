@@ -10,9 +10,9 @@ abstract class IBaseService {
   Dio createDio() {
     var dio = Dio(BaseOptions(
       baseUrl: url,
-      receiveTimeout: const Duration(seconds: 2),
-      connectTimeout: const Duration(seconds: 2),
-      sendTimeout: const Duration(seconds: 2),
+      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
     ));
     (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient =
         () => HttpClient()..badCertificateCallback = (X509Certificate cert, String host, int port) => true;

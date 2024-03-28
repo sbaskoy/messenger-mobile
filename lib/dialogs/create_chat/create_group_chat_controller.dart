@@ -16,8 +16,20 @@ import '../file_select/file_select_dialog.dart';
 
 class CreateGroupChatController {
   final groupMembers = SState<List<User>>([]);
+  final groupName = SState<String>("");
+  late final SReadOnlyState<List<User>> filteredUsers;
+
   final selectedGroupImage = SState<File>();
   final TextEditingController groupNameField = TextEditingController();
+
+  late final activeCreateButton =
+      groupMembers.combine(groupName, (members, name) => members.isNotEmpty && name.isNotEmpty);
+  CreateGroupChatController() {
+    groupNameField.addListener(() {
+      groupName.setState(groupNameField.text);
+    });
+  }
+
   void selectUser(User user) {
     var users = groupMembers.valueOrNull ?? [];
     if (users.any((element) => element.id == user.id)) {
@@ -62,7 +74,7 @@ class CreateGroupChatController {
               canSelectFile: false,
               onSelected: (selected) {
                 if (selected.isNotEmpty) {
-                  selectedGroupImage.setState(selected.first);
+                  selectedGroupImage.setState(selected.first.file);
                 }
               },
             );

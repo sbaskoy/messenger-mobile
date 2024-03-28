@@ -1,3 +1,5 @@
+import '../utils/app_utils.dart';
+
 class FileModel {
   int? fileId;
   String? fileName;
@@ -7,18 +9,21 @@ class FileModel {
   int? projectId;
   int? taskId;
   String? fileLink;
+  String? createdAt;
 
-  FileModel(
-      {this.fileId,
-      this.fileName,
-      this.fileExtension,
-      this.fileSize,
-      this.fileUploader,
-      this.projectId,
-      this.taskId,
-      this.fileLink});
+  FileModel({
+    this.fileId,
+    this.fileName,
+    this.fileExtension,
+    this.fileSize,
+    this.fileUploader,
+    this.projectId,
+    this.taskId,
+    this.fileLink,
+    this.createdAt,
+  });
 
-  FileModel.fromJson(Map<String, dynamic> json) {
+  FileModel.fromJson(Map json) {
     fileId = json['file_id'];
     fileName = json['file_name'];
     fileExtension = json['file_extension'];
@@ -27,6 +32,7 @@ class FileModel {
     projectId = json['project_id'];
     taskId = json['task_id'];
     fileLink = json['file_link'];
+    createdAt = json['created_at'];
   }
 
   Map<String, dynamic> toJson() {
@@ -41,4 +47,7 @@ class FileModel {
     data['file_link'] = fileLink;
     return data;
   }
+
+  String? getUrl() => AppUtils.getImageUrl(fileLink);
+  bool isImage() => AppUtils.isImage(fileExtension ?? "");
 }

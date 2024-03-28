@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:planner_messenger/controllers/users_controller.dart';
 import 'package:planner_messenger/dialogs/create_chat/create_group_chat.dart';
 import 'package:planner_messenger/dialogs/create_chat/create_private_chat.dart';
+import 'package:planner_messenger/widgets/utils/close_keyboard.dart';
 
 import 'create_group_chat_controller.dart';
 import 'create_group_chat_select_user.dart';
@@ -28,13 +29,13 @@ class _CreateChatDialogState extends State<CreateChatDialog> {
     const pageCurve = Curves.linear;
     return PageView(
       controller: pageController,
-      allowImplicitScrolling: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
         CreatePrivateChatWidget(
           controller: _controller,
           createGroupChat: () {
             pageController.nextPage(duration: pageDuration, curve: pageCurve);
+            CloseKeyboardWidget.closeKeyboard(context);
           },
         ),
         CreateGroupSelectUser(
@@ -42,6 +43,7 @@ class _CreateChatDialogState extends State<CreateChatDialog> {
           createGroupChatController: createGroupChatController,
           onCancel: () {
             pageController.previousPage(duration: pageDuration, curve: pageCurve);
+            CloseKeyboardWidget.closeKeyboard(context);
           },
           onNext: () {
             pageController.nextPage(duration: pageDuration, curve: pageCurve);
@@ -52,6 +54,7 @@ class _CreateChatDialogState extends State<CreateChatDialog> {
           controller: _controller,
           onCancel: () {
             pageController.previousPage(duration: pageDuration, curve: pageCurve);
+            CloseKeyboardWidget.closeKeyboard(context);
           },
         )
       ],

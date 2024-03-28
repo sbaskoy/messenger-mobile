@@ -11,45 +11,40 @@ class ReplyMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: context.theme.scaffoldBackgroundColor.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        height: 50,
-        child: Row(
-          children: [
-            if (hideStartBorder != true)
-              Container(
-                width: 10,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: context.theme.primaryColor,
-                ),
-              ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data.user?.fullName ?? "",
-                      style: context.theme.textTheme.bodyMedium?.copyWith(
-                        color: context.theme.primaryColor,
-                      ),
-                    ),
-                    Text(
-                      data.message ?? "",
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+    return Card(
+      child: Row(
+        children: [
+          if (hideStartBorder != true)
+            Container(
+              width: 10,
+              height: 50,
+              decoration: BoxDecoration(
+                color: context.theme.primaryColor,
               ),
             ),
-            if (trailing != null) trailing!,
-          ],
-        ));
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data.user?.fullName ?? "",
+                    style: context.theme.textTheme.bodyMedium?.copyWith(
+                      color: context.theme.primaryColor,
+                    ),
+                  ),
+                  Text(
+                    data.message ?? "",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (trailing != null) trailing!,
+        ],
+      ),
+    );
   }
 }

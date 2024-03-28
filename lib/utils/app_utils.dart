@@ -1,14 +1,14 @@
-import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_theme.dart';
 import '../constants/app_constants.dart';
+import '../constants/app_controllers.dart';
 import '../widgets/progress_indicator/centered_progress_indicator.dart';
 import '../widgets/snackbar/custom_snackbar.dart';
-import '../widgets/texts/app_text.dart';
 import '../widgets/texts/centered_error_text.dart';
 import 'hex_color.dart';
 
@@ -49,14 +49,9 @@ class AppUtils {
     required Widget Function(BuildContext c, ScrollController scrollController, double) builder,
     double? initHeight,
   }) {
-    return showFlexibleBottomSheet(
-      minHeight: 0,
-      initHeight: initHeight ?? 0.5,
-      maxHeight: 1,
-      context: context,
-      duration: const Duration(milliseconds: 500),
-      builder: (context, scrollController, bottomSheetOffset) {
-        return Container(
+    return Get.bottomSheet(
+      SafeArea(
+        child: Container(
           decoration: const BoxDecoration(color: Colors.transparent),
           child: Column(
             children: [
@@ -72,39 +67,59 @@ class AppUtils {
               Expanded(
                 child: Container(
                   decoration: AppConstants.popupDecoration(context),
-                  child: builder(context, scrollController, bottomSheetOffset),
+                  child: builder(context, ScrollController(), 1),
                 ),
               )
             ],
           ),
-        );
-      },
-      anchors: [0, 0.5, 1],
-      isSafeArea: true,
-      bottomSheetColor: Colors.transparent,
+        ),
+      ),
+      isScrollControlled: (initHeight ?? 0) > 0.5 ? true : false,
+      ignoreSafeArea: false,
     );
   }
 
   static Future<bool> buildYesOrNoAlert(BuildContext context, String message) async {
-    return await showDialog<bool>(
+    // if (!Platform.isIOS) {
+    //   return await showDialog<bool>(
+    //         context: context,
+    //         builder: (context) {
+    //           return AlertDialog(
+    //             insetPadding: const EdgeInsets.all(4),
+    //             actionsPadding: const EdgeInsets.all(4),
+    //             title: BodyLargeText(message, fontSize: 12),
+    //             actions: [
+    //               TextButton(
+    //                 onPressed: () => Navigator.pop(context, false),
+    //                 child: const Text('No'),
+    //               ),
+    //               TextButton(
+    //                 onPressed: () => Navigator.pop(context, true),
+    //                 child: const Text('Yes'),
+    //               )
+    //             ],
+    //           );
+    //         },
+    //       ) ??
+    //       false;
+    // }
+
+    return await showCupertinoDialog(
           context: context,
-          builder: (context) {
-            return AlertDialog(
-              insetPadding: const EdgeInsets.all(4),
-              actionsPadding: const EdgeInsets.all(4),
-              title: BodyLargeText(message, fontSize: 12),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('No'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Yes'),
-                )
-              ],
-            );
-          },
+          barrierDismissible: true,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text(message),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text("No"),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              CupertinoDialogAction(
+                child: const Text("Yes"),
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ],
+          ),
         ) ??
         false;
   }
@@ -156,4 +171,14 @@ class AppUtils {
           decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
         ),
       );
+  static String? getImageUrl(String? url) {
+    var user = AppControllers.auth.user;
+    return url?.replaceAll(("viewFile/user_token"), "viewImage/${user?.id}-${user?.tenantId}");
+  }
+
+  static bool isImage(String extension) {
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    // const documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx'];
+    return imageExtensions.any((element) => element == extension);
+  }
 }

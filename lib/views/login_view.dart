@@ -7,6 +7,7 @@ import 'package:planner_messenger/managers/local_manager.dart';
 import 'package:planner_messenger/widgets/buttons/primary_app_button.dart';
 
 import '../constants/app_images.dart';
+
 import '../widgets/forms/text_fields.dart';
 
 class LoginView extends StatefulWidget {

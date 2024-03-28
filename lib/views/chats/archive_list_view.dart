@@ -16,13 +16,36 @@ class ArchiveListView extends StatefulWidget {
 class _ArchiveListViewState extends State<ArchiveListView> {
   final _controller = AppControllers.chatList..loadChats(archive: true);
 
+  final ScrollController _scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+        AppControllers.chatList.loadNextPage(archive: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _controller.orderedArchiveChats.builder(
-        AppUtils.sStateBuilder((data) {
-          return ChatListWidget(chats: data);
-        }),
+      body: RefreshIndicator(
+        onRefresh: () => _controller.loadChats(archive: true, refresh: true),
+        child: _controller.orderedArchiveChats.builder(
+          AppUtils.sStateBuilder((data) {
+            return ChatListWidget(
+              chats: data,
+              scrollController: _scrollController,
+            );
+          }),
+        ),
       ),
     );
   }

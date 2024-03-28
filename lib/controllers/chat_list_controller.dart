@@ -1,6 +1,8 @@
+import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_services.dart';
 import 'package:planner_messenger/extensions/string_extension.dart';
 import 'package:planner_messenger/models/chats/chat.dart';
+import 'package:planner_messenger/models/message/message.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
 import 'package:s_state/s_state.dart';
@@ -19,6 +21,9 @@ class ChatListController {
 
   late final SReadOnlyState<List<Chat>> orderedArchiveChats;
 
+  int archivePage = 1;
+  int activePage = 1;
+
   ChatListController() {
     orderedChats = chats.transform((value) {
       value.sort(_sortChat);
@@ -30,15 +35,31 @@ class ChatListController {
     });
   }
 
-  Future<void> loadChats({bool? archive}) async {
+  Future<void> loadChats({bool? archive, bool? refresh}) async {
     try {
       AppProgressController.show();
-      var response = await AppServices.chat.listChat(archive: archive);
+      var response = await AppServices.chat.listChat(
+        archive: archive,
+        page: archive == true ? archivePage : activePage,
+        refresh: refresh,
+      );
       if (response != null) {
         if (archive == true) {
-          archivedChats.setState(response);
+          if (refresh == true) {
+            archivedChats.setState(response);
+          } else {
+            var c = archivedChats.valueOrNull ?? [];
+            c.addAll(response);
+            archivedChats.setState(c);
+          }
         } else {
-          chats.setState(response);
+          if (refresh == true) {
+            chats.setState(response);
+          } else {
+            var c = chats.valueOrNull ?? [];
+            c.addAll(response);
+            chats.setState(c);
+          }
         }
       }
     } catch (ex) {
@@ -52,12 +73,40 @@ class ChatListController {
     }
   }
 
+  Future<void> loadNextPage({bool? archive}) async {
+    if (archive == true) {
+      activePage += 1;
+    } else {
+      activePage += 1;
+    }
+    await loadChats(archive: archive);
+  }
+
+  void addNewMessage(Message message) {
+    var activeChats = chats.valueOrNull ?? [];
+    var archived = archivedChats.valueOrNull ?? [];
+    var allChats = [...activeChats, ...archived];
+    var chat = allChats.firstWhereOrNull((element) => element.id == message.chatId);
+    if (chat == null) return;
+    chat.messages ??= [];
+    if (chat.messages?.isEmpty ?? false) {
+      chat.messages!.add(message);
+    } else {
+      chat.messages![0] = message;
+    }
+    updateChat(chat);
+  }
+
   void updateChat(Chat chat) {
     if (chat.isArchived == 1) {
       var c = archivedChats.valueOrNull ?? [];
+      var index = c.indexWhere((element) => element.id == chat.id);
+      c[index] = chat;
       archivedChats.setState(c);
     } else {
       var c = chats.valueOrNull ?? [];
+      var index = c.indexWhere((element) => element.id == chat.id);
+      c[index] = chat;
       chats.setState(c);
     }
   }

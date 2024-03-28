@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
@@ -7,10 +8,20 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:s_state/s_state.dart';
 
+class IFilePickerItem {
+  final File file;
+  final bool isDocument;
+  late Uint8List bytes;
+
+  IFilePickerItem({required this.file, required this.isDocument}) {
+    bytes = file.readAsBytesSync();
+  }
+}
+
 class FileSelectDialogController {
   final photos = SState<List<Medium>>([]);
   final selectedPhotos = SState<List<Medium>>([]);
-  final void Function(List<File> selected)? onSelected;
+  final void Function(List<IFilePickerItem> selected)? onSelected;
   FileSelectDialogController({this.onSelected});
   Future<void> loadAlbums() async {
     if (!await _promptPermissionSetting()) return;
@@ -35,16 +46,16 @@ class FileSelectDialogController {
   void uploadSelected() async {
     var selectedItems = selectedPhotos.valueOrNull ?? [];
     var photos = await Future.wait(selectedItems.map((e) => e.getFile()));
-    onSelected?.call(photos);
     Get.back();
+    onSelected?.call(photos.map((e) => IFilePickerItem(file: e, isDocument: false)).toList());
   }
 
   void onSelectCamera() async {
     final ImagePicker picker = ImagePicker();
     final XFile? photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
     if (photo != null) {
-      onSelected?.call([File(photo.path)]);
       Get.back();
+      onSelected?.call([IFilePickerItem(file: File(photo.path), isDocument: false)]);
     }
   }
 
@@ -56,9 +67,9 @@ class FileSelectDialogController {
       final ImagePicker picker = ImagePicker();
       final List<XFile> images = await picker.pickMultiImage(imageQuality: 50);
       if (images.isNotEmpty) {
-        var photos = images.map((e) => File(e.path)).toList();
-        onSelected?.call(photos);
+        var photos = images.map((e) => IFilePickerItem(file: File(e.path), isDocument: false)).toList();
         Get.back();
+        onSelected?.call(photos);
       }
     }
   }
@@ -66,10 +77,10 @@ class FileSelectDialogController {
   void onSelectFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
     if (result?.files.isNotEmpty ?? false) {
-      var files = result!.files.map((e) => File(e.path!)).toList();
+      var files = result!.files.map((e) => IFilePickerItem(file: File(e.path!), isDocument: true)).toList();
 
-      onSelected?.call(files);
       Get.back();
+      onSelected?.call(files);
     }
   }
 

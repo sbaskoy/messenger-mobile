@@ -1,5 +1,9 @@
+import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
+import 'package:planner_messenger/models/message/chat_message_attachment.dart';
 import 'package:planner_messenger/models/message/message_type.dart';
+import 'package:s_state/s_state.dart';
 
+import '../../constants/app_services.dart';
 import '../auth/user.dart';
 import 'seen_by.dart';
 
@@ -14,6 +18,8 @@ class Message {
   MessageType? messageType;
   User? user;
   Message? reply;
+  List<ChatMessageAttachment>? attachments;
+  List<IFilePickerItem>? sendingAttachments;
 
   Message({
     this.chatId,
@@ -26,11 +32,13 @@ class Message {
     this.messageType,
     this.user,
     this.reply,
+    this.attachments,
+    this.sendingAttachments,
   });
 
   bool isSystemMessage() => false;
 
-  Message.fromJson(Map<String, dynamic> json) {
+  Message.fromJson(Map json) {
     chatId = json['chat_id'];
     message = json['message'];
     id = json['id'];
@@ -46,6 +54,10 @@ class Message {
     messageType = json['message_type'] != null ? MessageType.fromJson(json["message_type"]) : null;
     user = json['user'] != null ? User.fromJson(json['user']) : null;
     reply = json['reply'] != null ? Message.fromJson(json['reply']) : null;
+    var attachmentsJson = json["attachments"];
+    if (attachmentsJson is List) {
+      attachments = attachmentsJson.map((e) => ChatMessageAttachment.fromJson(e)).toList();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -65,4 +77,6 @@ class Message {
     }
     return data;
   }
+
+  final isSended = SState(true);
 }

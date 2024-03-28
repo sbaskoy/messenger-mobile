@@ -38,6 +38,7 @@ class _CreateGroupSelectUserState extends State<CreateGroupSelectUser> {
             children: [
               SizedBox(
                 width: Get.width,
+                height: 50,
                 child: widget.createGroupChatController.groupMembers.builder(
                   AppUtils.sStateBuilder(
                     (data) => Stack(
@@ -45,11 +46,10 @@ class _CreateGroupSelectUserState extends State<CreateGroupSelectUser> {
                       children: [
                         Positioned(
                           left: 8,
-                          child: InkWell(
-                              onTap: widget.onCancel,
-                              child: Text(
+                          child: TextButton(
+                              onPressed: widget.onCancel,
+                              child: const Text(
                                 "Cancel",
-                                style: Theme.of(context).textTheme.bodyMedium,
                               )),
                         ),
                         Text(
@@ -60,20 +60,19 @@ class _CreateGroupSelectUserState extends State<CreateGroupSelectUser> {
                         ),
                         Positioned(
                           right: 8,
-                          child: InkWell(
-                              onTap: () {
-                                if (data.isNotEmpty) {
-                                  widget.onNext?.call();
-                                }
-                              },
-                              child: Text(
-                                "Next",
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: data.isEmpty
-                                          ? Theme.of(context).disabledColor
-                                          : Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                              )),
+                          child: TextButton(
+                            onPressed: () {
+                              if (data.isNotEmpty) {
+                                widget.onNext?.call();
+                              }
+                            },
+                            child: Text(
+                              "Next",
+                              style: TextStyle(
+                                color: data.isEmpty ? Theme.of(context).disabledColor : null,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -92,7 +91,7 @@ class _CreateGroupSelectUserState extends State<CreateGroupSelectUser> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: widget.controller.users.builder(
+            child: widget.controller.filteredUsers.builder(
               AppUtils.sStateBuilder((data) {
                 return widget.createGroupChatController.groupMembers.builder(
                   AppUtils.sStateBuilder((members) {
