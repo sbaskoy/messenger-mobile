@@ -13,9 +13,11 @@ class ChatListView extends StatefulWidget {
   State<ChatListView> createState() => _ChatListViewState();
 }
 
-class _ChatListViewState extends State<ChatListView> {
+class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver{
   final _controller = AppControllers.chatList..loadChats(refresh: true);
   final ScrollController _scrollController = ScrollController();
+
+
   @override
   void initState() {
     super.initState();
@@ -25,6 +27,30 @@ class _ChatListViewState extends State<ChatListView> {
       }
     });
   }
+
+@override
+        void didChangeAppLifecycleState(AppLifecycleState state) {
+            super.didChangeAppLifecycleState(state);
+            switch (state) {
+            case AppLifecycleState.inactive:
+                print('appLifeCycleState inactive');
+                break;
+            case AppLifecycleState.resumed:
+                _controller.loadChats(refresh: true);
+                break;
+            case AppLifecycleState.paused:
+                print('appLifeCycleState paused');
+                break;
+       
+              case AppLifecycleState.detached:
+               print('appLifeCycleState detached');
+                break;
+              case AppLifecycleState.hidden:
+                print('appLifeCycleState hidden');
+                break;
+            }
+        }
+
 
   @override
   void dispose() {

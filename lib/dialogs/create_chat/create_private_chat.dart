@@ -99,12 +99,12 @@ class _CreatePrivateChatWidgetState extends State<CreatePrivateChatWidget> {
           ),
         ),
         emptySize,
-        Expanded(
+        Flexible(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: NotificationListener<ScrollNotification>(
               onNotification: onScroll,
-              child: ListView(
+              child: Column(
                 children: [
                   Container(
                     decoration: BoxDecoration(
@@ -128,31 +128,33 @@ class _CreatePrivateChatWidgetState extends State<CreatePrivateChatWidget> {
                   emptySize,
                   const Text("Users"),
                   emptySize,
-                  widget.controller.filteredUsers.builder(AppUtils.sStateBuilder((data) {
-                    return Container(
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).disabledColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(5)),
-                        child: AppUtils.appListView(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          items: data,
-                          builder: (context, index, user) {
-                            return Column(
-                              children: [
-                                ListTile(
-                                  onTap: () => _createPrivateChat(user),
-                                  leading: CircleAvatar(
-                                    backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                  Expanded(
+                    child: widget.controller.filteredUsers.builder(AppUtils.sStateBuilder((data) {
+                      return Container(
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).disabledColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(5)),
+                          child: AppUtils.appListView(
+                            //shrinkWrap: true,
+                            physics: const ClampingScrollPhysics(),
+                            items: data,
+                            builder: (context, index, user) {
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    onTap: () => _createPrivateChat(user),
+                                    leading: CircleAvatar(
+                                      backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                                    ),
+                                    title: Text(user.fullName ?? ""),
                                   ),
-                                  title: Text(user.fullName ?? ""),
-                                ),
-                                const Divider(indent: 72, height: 2)
-                              ],
-                            );
-                          },
-                        ));
-                  }))
+                                  const Divider(indent: 72, height: 2)
+                                ],
+                              );
+                            },
+                          ));
+                    })),
+                  )
                 ],
               ),
             ),

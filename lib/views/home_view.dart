@@ -42,6 +42,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       });
   }
 
+
+
   @override
   void dispose() {
     super.dispose();
@@ -53,7 +55,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Planner",
+          "Passenger",
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: Colors.white,
               ),

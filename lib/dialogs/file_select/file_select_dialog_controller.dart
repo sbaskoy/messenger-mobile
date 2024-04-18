@@ -13,41 +13,12 @@ class IFilePickerItem {
   final bool isDocument;
   late Uint8List bytes;
   String? name;
-  File? tempFile;
+  
   IFilePickerItem({required this.file, required this.isDocument, this.name}) {
     bytes = file.readAsBytesSync();
   }
 
-  void createTemp() {
-    String fileName = file.path.split('/').last;
-    Directory tempDir = Directory.systemTemp.createTempSync();
-    tempFile = File('${tempDir.path}/$fileName');
-    tempFile!.writeAsBytesSync(bytes);
-  }
-
-  void deleteTemp() {
-    if (tempFile?.existsSync() ?? false) {
-      tempFile?.deleteSync();
-      tempFile = null;
-    }
-  }
-
-  void updateTemp() {
-    deleteTemp();
-    createTemp();
-  }
-
-  void updateOrCreateTemp() {
-    if (hasTemp()) {
-      updateTemp();
-    } else {
-      createTemp();
-    }
-  }
-
-  bool hasTemp() {
-    return tempFile?.existsSync() ?? false;
-  }
+  
 }
 
 class FileSelectDialogController {

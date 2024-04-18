@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:planner_messenger/constants/app_controllers.dart';
 import 'package:planner_messenger/constants/app_services.dart';
 import 'package:planner_messenger/models/auth/user.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
@@ -15,8 +16,9 @@ class UsersController {
 
   UsersController() {
     filteredUsers = users.combine(searchText, (current, other) {
+      var usersWithoutMe=current.where((element) => element.id != AppControllers.auth.user?.id);
       var searchTerm = other.toLowerCase();
-      return current.where((element) => (element.fullName ?? "").toLowerCase().contains(searchTerm)).toList();
+      return usersWithoutMe.where((element) => (element.fullName ?? "").toLowerCase().contains(searchTerm)).toList();
     });
     searchTextField.addListener(() {
       searchText.setState(searchTextField.text);

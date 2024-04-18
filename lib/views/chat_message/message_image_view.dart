@@ -86,13 +86,13 @@ class _MessageFilesViewState extends State<MessageFilesView> {
                         if (mounted) {
                           setState(() {
                             item.bytes = data;
-                            item.updateOrCreateTemp();
+                            //item.updateOrCreateTemp();
                             _editMode = false;
                           });
                         }
                       },
                     ),
-                    secondChild: Image.file(item.tempFile ?? item.file),
+                    secondChild: Image.memory (item.bytes),
                     crossFadeState: _editMode ? CrossFadeState.showFirst : CrossFadeState.showSecond,
                   ),
                 );
@@ -175,7 +175,7 @@ class _MessageFilesViewState extends State<MessageFilesView> {
                           height: 40,
                           fit: BoxFit.cover,
                           placeholder: MemoryImage(kTransparentImage),
-                          image: FileImage(item.file),
+                          image: MemoryImage(item.bytes),
                         ),
                         AnimatedCrossFade(
                           duration: const Duration(milliseconds: 500),

@@ -79,7 +79,7 @@ flutter_icons:
 
 flutter_native_splash:
   color: "#ffffff"
-  image: "assets/logo.png"
+  image: "assets/logo.jpg"
 
 flutter:
   # The following line ensures that the Material Icons font is

@@ -70,18 +70,18 @@ class MessageService {
       data: FormData.fromMap(
         {
           ...dataMap,
-          "files": await Future.wait(attachments
+          "files": attachments
                   ?.map(
-                    (e) => MultipartFile.fromFile(
-                      e.tempFile?.path ?? e.file.path,
+                    (e) => MultipartFile.fromBytes(
+                      e.bytes,
                       filename: e.name ??
                           path.basename(
-                            e.tempFile?.path ?? e.file.path,
+                            e.file.path
                           ),
                     ),
                   )
                   .toList() ??
-              [])
+              []
         },
       ),
     );

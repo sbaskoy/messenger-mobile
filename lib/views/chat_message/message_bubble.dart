@@ -62,7 +62,7 @@ class ChatMessageBubble extends StatelessWidget {
         (loading, isSended, error, context) {
           return Container(
             width: Get.width,
-            margin: const EdgeInsets.symmetric(vertical: 4),
+            margin: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
             //color: Colors.red,
             child: Align(
               alignment: isAuthorCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
