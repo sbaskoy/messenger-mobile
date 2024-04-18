@@ -6,7 +6,7 @@ import 'package:planner_messenger/extensions/string_extension.dart';
 import 'package:planner_messenger/models/chats/chat.dart';
 
 import 'package:planner_messenger/utils/app_utils.dart';
-import 'package:planner_messenger/views/chat_message/message_buble.dart';
+import 'package:planner_messenger/views/chat_message/message_bubble.dart';
 
 import 'package:s_state/s_state.dart';
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "570179754457",
+    "project_id": "planner-messenger",
+    "storage_bucket": "planner-messenger.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:570179754457:android:d20dd2e3de7859d8c021c8",
+        "android_client_info": {
+          "package_name": "com.bilsas.planner_messenger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApNDjObz8YORbifw_3yrIWoZmaiYZgQcE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

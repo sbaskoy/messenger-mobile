@@ -12,9 +12,41 @@ class IFilePickerItem {
   final File file;
   final bool isDocument;
   late Uint8List bytes;
-
-  IFilePickerItem({required this.file, required this.isDocument}) {
+  String? name;
+  File? tempFile;
+  IFilePickerItem({required this.file, required this.isDocument, this.name}) {
     bytes = file.readAsBytesSync();
+  }
+
+  void createTemp() {
+    String fileName = file.path.split('/').last;
+    Directory tempDir = Directory.systemTemp.createTempSync();
+    tempFile = File('${tempDir.path}/$fileName');
+    tempFile!.writeAsBytesSync(bytes);
+  }
+
+  void deleteTemp() {
+    if (tempFile?.existsSync() ?? false) {
+      tempFile?.deleteSync();
+      tempFile = null;
+    }
+  }
+
+  void updateTemp() {
+    deleteTemp();
+    createTemp();
+  }
+
+  void updateOrCreateTemp() {
+    if (hasTemp()) {
+      updateTemp();
+    } else {
+      createTemp();
+    }
+  }
+
+  bool hasTemp() {
+    return tempFile?.existsSync() ?? false;
   }
 }
 
@@ -50,12 +82,20 @@ class FileSelectDialogController {
     onSelected?.call(photos.map((e) => IFilePickerItem(file: e, isDocument: false)).toList());
   }
 
-  void onSelectCamera() async {
+  static Future<IFilePickerItem?> selectPhotoFromCamera() async {
     final ImagePicker picker = ImagePicker();
     final XFile? photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
     if (photo != null) {
+      return IFilePickerItem(file: File(photo.path), isDocument: false);
+    }
+    return null;
+  }
+
+  void onSelectCamera() async {
+    final IFilePickerItem? photo = await selectPhotoFromCamera();
+    if (photo != null) {
       Get.back();
-      onSelected?.call([IFilePickerItem(file: File(photo.path), isDocument: false)]);
+      onSelected?.call([photo]);
     }
   }
 
@@ -75,9 +115,17 @@ class FileSelectDialogController {
   }
 
   void onSelectFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+    );
     if (result?.files.isNotEmpty ?? false) {
-      var files = result!.files.map((e) => IFilePickerItem(file: File(e.path!), isDocument: true)).toList();
+      var files = result!.files
+          .map((e) => IFilePickerItem(
+                file: File(e.path!),
+                isDocument: true,
+                name: e.name,
+              ))
+          .toList();
 
       Get.back();
       onSelected?.call(files);

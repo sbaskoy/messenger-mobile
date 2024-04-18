@@ -11,7 +11,7 @@ import '../constants/app_images.dart';
 import '../widgets/forms/text_fields.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -27,6 +27,7 @@ class _LoginViewState extends State<LoginView> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await AppManagers.local.load();
       var username = AppManagers.local.getString(LocalManagerKey.username);
       var password = AppManagers.local.getString(LocalManagerKey.password);
       _emailController.text = username;
@@ -56,7 +57,7 @@ class _LoginViewState extends State<LoginView> {
                 children: [
                   SizedBox(height: MediaQuery.of(context).padding.top + 30),
                   Text(
-                    "Planner",
+                    "Passenger",
                     style: Get.textTheme.titleLarge?.copyWith(
                       fontSize: 30,
                       color: Theme.of(context).primaryColor,
@@ -64,7 +65,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "Hoş geldiniz",
+                    "Giriş yap",
                     style: Get.textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).primaryColor,
                     ),
@@ -91,6 +92,7 @@ class _LoginViewState extends State<LoginView> {
   CustomTextField _buildEmailTextField(BuildContext context) {
     return CustomTextField(
       hintText: "Email",
+      textInputType: TextInputType.emailAddress,
       validator: (value) {
         if (value?.isEmpty ?? true) {
           return "Email is required field";

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:planner_messenger/dialogs/create_chat/create_chat_dialog.dart';
-import 'package:planner_messenger/utils/app_utils.dart';
+import 'package:get/get.dart';
+import 'package:planner_messenger/dialogs/search/search_dialog.dart';
 
-import 'package:planner_messenger/views/chats/archive_list_view.dart';
-import 'package:planner_messenger/views/call_list_view.dart';
-
+import '../constants/app_controllers.dart';
+import '../dialogs/create_chat/create_chat_dialog.dart';
+import '../utils/app_utils.dart';
+import 'call_list_view.dart';
+import 'chats/archive_list_view.dart';
 import 'chats/chat_list_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -35,9 +37,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
             case 2:
               fabIcon = Icons.camera_alt_outlined;
               break;
-            case 2:
-              fabIcon = Icons.message;
-              break;
           }
         });
       });
@@ -60,9 +59,20 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
               ),
         ),
         actions: <Widget>[
-          const Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.search),
+          InkWell(
+            onTap: () {
+              AppUtils.showFlexibleDialog(
+                context: context,
+                builder: (c, scrollController, p2) {
+                  return const SearchDialog();
+                },
+                initHeight: 1,
+              );
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: Icon(Icons.search),
+            ),
           ),
           InkWell(
             onTap: () {
@@ -83,28 +93,37 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
               ),
             ),
           ),
-          PopupMenuButton(
+          PopupMenuButton<int>(
               enabled: true,
               icon: const Icon(Icons.more_vert_outlined),
+              position: PopupMenuPosition.under,
+              splashRadius: 20,
               itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 1,
                       child: Text(
-                        "New Group",
+                        AppControllers.auth.user?.fullName ?? "",
+                        style: TextStyle(
+                          color: context.theme.primaryColor,
+                        ),
                       ),
                     ),
-                    const PopupMenuItem(
-                      value: 2,
-                      child: Text("Linked devices"),
-                    ),
+                    const PopupMenuDivider(),
                     PopupMenuItem(
-                      value: 2,
-                      child: InkWell(
-                          onTap: () {
-                            // Navigator.pop(context);
-                            // Navigator.push(context, MaterialPageRoute(builder: (context) => SettingScreen()));
-                          },
-                          child: const Text("Setting")),
+                      value: 23,
+                      onTap: () async {
+                        var res =
+                            await AppUtils.buildYesOrNoAlert(context, "Çıkış yapmak istediğinizden emin misiniz?");
+                        if (res) {
+                          AppControllers.auth.logout();
+                        }
+                      },
+                      child: Text(
+                        "Logout",
+                        style: TextStyle(
+                          color: context.theme.colorScheme.error,
+                        ),
+                      ),
                     )
                   ]),
         ],

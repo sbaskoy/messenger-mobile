@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -137,6 +139,13 @@ class AppUtils {
       }
       return const CenteredProgressIndicator();
     };
+  }
+
+  static void clearTempDirectory() {
+    var files = Directory.systemTemp.listSync();
+    for (var element in files) {
+      element.deleteSync(recursive: true);
+    }
   }
 
   static Widget appListView<T>(

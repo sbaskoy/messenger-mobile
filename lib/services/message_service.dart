@@ -1,44 +1,87 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
+
+import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
 import 'package:planner_messenger/models/api_info_mode.dart';
 
 import 'package:planner_messenger/models/message/message.dart';
 import 'package:planner_messenger/services/messenger_service.dart';
 
 import '../models/message/favorite_message.dart';
+import 'package:path/path.dart' as path;
 
 class MessageService {
   final MessengerService service;
 
   MessageService({required this.service});
 
-  Future<List<Message>?> listMessages(String chatId, {int page = 1, bool? refresh}) async {
-    var response = await service.dio.get("/messages/$chatId", queryParameters: {
-      "page": page,
-      "refresh": refresh,
-    });
-    if (response.data != null) {
-      var jsonResponse = response.data;
-      if (jsonResponse is List) {
-        return jsonResponse.map((e) => Message.fromJson(e)).toList();
-      }
+  List<Message>? _parseMessageList<T>(T? data) {
+    if (data != null && data is List) {
+      return data.map((e) => Message.fromJson(e)).toList();
     }
     return null;
   }
 
-  Future<Message?> sendMessage(String chatId, String message, {int? replyId, List<File>? attachments}) async {
+  Future<List<Message>?> listMessages(
+    String chatId, {
+    int? startMessageId,
+  }) async {
+    var response = await service.dio.get(
+      "/messages/$chatId",
+      queryParameters: {
+        "startMessageId": startMessageId,
+      },
+    );
+    return _parseMessageList(response.data);
+  }
+
+  Future<List<Message>?> previousMessages(String chatId, int messageId) async {
+    var response = await service.dio.get(
+      "/messages/$chatId/previous",
+      queryParameters: {
+        "messageId": messageId,
+      },
+    );
+    return _parseMessageList(response.data);
+  }
+
+  Future<List<Message>?> nextMessages(String chatId, int messageId) async {
+    var response = await service.dio.get(
+      "/messages/$chatId/next",
+      queryParameters: {
+        "messageId": messageId,
+      },
+    );
+    return _parseMessageList(response.data);
+  }
+
+  Future<Message?> sendMessage(
+    String chatId,
+    String message, {
+    int? replyId,
+    List<IFilePickerItem>? attachments,
+  }) async {
     var dataMap = <String, dynamic>{"message": message};
     if (replyId != null) {
       dataMap["reply_id"] = replyId;
     }
-
+   
     var response = await service.dio.post(
       "/messages/$chatId",
       data: FormData.fromMap(
         {
           ...dataMap,
-          "files": await Future.wait(attachments?.map((e) => MultipartFile.fromFile(e.path)).toList() ?? [])
+          "files": await Future.wait(attachments
+                  ?.map(
+                    (e) => MultipartFile.fromFile(
+                      e.tempFile?.path ?? e.file.path,
+                      filename: e.name ??
+                          path.basename(
+                            e.tempFile?.path ?? e.file.path,
+                          ),
+                    ),
+                  )
+                  .toList() ??
+              [])
         },
       ),
     );
@@ -94,13 +137,5 @@ class MessageService {
     return null;
   }
 
-  Future<ApiInfoModel?> pinMessage(String chatId, int messageId) async {
-    var response = await service.dio.post("/messages/$chatId/pin-message", data: {
-      "message_id": messageId,
-    });
-    if (response.data != null) {
-      return ApiInfoModel.fromJson(response.data);
-    }
-    return null;
-  }
+
 }

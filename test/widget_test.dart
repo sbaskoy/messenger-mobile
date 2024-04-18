@@ -7,16 +7,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:planner_messenger/constants/app_controllers.dart';
-import 'package:planner_messenger/constants/app_services.dart';
 
 import 'package:planner_messenger/main.dart';
 
 void main() {
-  test("Chat api", () async {
-    var authController = AppControllers.auth;
-    var authResponse = await AppServices.auth.login("salim@ganiotomasyon.com", "123Salim");
-    expect(authResponse != null, true);
-    authController.authUser.setState(authResponse!);
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
   });
 }

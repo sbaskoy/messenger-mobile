@@ -1,14 +1,17 @@
+import 'dart:developer';
+
 import 'package:planner_messenger/constants/app_constants.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
 import 'package:planner_messenger/models/chats/chat.dart';
 import 'package:planner_messenger/models/message/message.dart';
+import 'package:s_state/s_state.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SocketManager {
   Socket? _socket;
 
   Socket? get client => _socket;
-
+  final isConnected = SState(false);
   initSocket(String? accessToken) {
     if (accessToken == null) return;
     _socket = io(AppConstants.baseApiUrl, {
@@ -18,10 +21,12 @@ class SocketManager {
     });
 
     _socket?.on("connect", (data) {
-      print("Socket connect");
+      log("Socket connect");
+      isConnected.setState(true);
     });
     _socket?.on("disconnected", (data) {
-      print("Socket disconnect");
+      log("Socket disconnect");
+      isConnected.setState(false);
     });
     _socket?.on("NEW_MESSAGE", (data) {
       var message = Message.fromJson(data);
@@ -39,5 +44,17 @@ class SocketManager {
 
   void leaveChat(String chatId) {
     _socket?.emit("LEAVE_CHAT", {"chat_id": chatId});
+  }
+
+  Future<dynamic> request(String event, Map data) {
+    return Future(() {
+      _socket?.emitWithAck(event, data);
+      _socket?.once("RESPONSE", (data) {
+        if (data is Map && data["error"] != null) {
+          throw Exception(data["error"]);
+        }
+        return data;
+      });
+    });
   }
 }

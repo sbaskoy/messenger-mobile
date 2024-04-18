@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:get/get.dart';
+
 import 'package:planner_messenger/constants/app_controllers.dart';
 import 'package:planner_messenger/constants/app_managers.dart';
 import 'package:planner_messenger/constants/app_services.dart';
@@ -11,17 +12,31 @@ import 'package:planner_messenger/extensions/string_extension.dart';
 import 'package:planner_messenger/models/auth/user_activity.dart';
 import 'package:planner_messenger/models/chats/chat.dart';
 import 'package:planner_messenger/models/chats/chat_detail.dart';
+import 'package:planner_messenger/models/chats/chat_user.dart';
 import 'package:planner_messenger/models/message/message.dart';
+import 'package:planner_messenger/models/message/seen_by.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
+
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+
 import 'package:s_state/s_state.dart';
+import 'package:scrollable_positioned_list_extended/scrollable_positioned_list_extended.dart';
+
+// int _messagesSortCompate(Message a, Message b){
+//   return b.createdAt.tryParseDateTime()!.compareTo(a.createdAt.tryParseDateTime()!);
+// }
+
+void _wait(VoidCallback callback) {
+  Future.delayed(Durations.medium3).then((value) => callback());
+}
 
 class MessageListItem {
   String? date;
   Message? message;
 
   MessageListItem({this.date, this.message});
+
+  // String get formattedDate=> date.dateFormat()
 }
 
 class MessageController {
@@ -33,36 +48,47 @@ class MessageController {
     messageTextController.addListener(() {
       messageText.setState(messageTextController.text);
     });
-    messagesByDate = messages.transform((values) {
+    sortedMessages = messages.transform((values) {
       values.sort((a, b) => b.createdAt.tryParseDateTime()!.compareTo(a.createdAt.tryParseDateTime()!));
+      return values;
+    });
+
+    messagesWithDate = sortedMessages.transform((values) {
+      //values.sort((a, b) => );
+
       Map<String, List<Message>> grouped = values.groupBy((item) => item.createdAt.dateFormat("yyyy-MM-dd"));
-      for (var element in grouped.values) {
-        element.sort((a, b) => a.createdAt.tryParseDateTime()!.compareTo(b.createdAt.tryParseDateTime()!));
+      List<MessageListItem> response = [];
+      for (var key in grouped.keys) {
+        var keyValues = grouped[key] ?? [];
+        if (keyValues.isEmpty) continue;
+        var date = keyValues.first.createdAt;
+        response.add(MessageListItem(date: date));
+        List<MessageListItem> subItems = [];
+        for (var messageItem in keyValues) {
+          subItems.add(MessageListItem(message: messageItem, date: date));
+        }
+        response.insertAll(response.length - 1, subItems);
       }
-      // var resValues = <MessageListItem>[];
-      // for (var element in grouped.keys) {
-      //   resValues.add(MessageListItem(date: element));
-      //   var items = grouped[element];
-      //   resValues.addAll(items?.map((e) => MessageListItem(message: e)) ?? []);
-      // }
-      // resValues.sort((a, b)  {
-      //   var aDate=a.date != null ?
-      // });
-      return grouped;
+      //response.sort((a, b) => b.date.tryParseDateTime()!.compareTo(a.date.tryParseDateTime()!));
+      return response;
     });
     if (chat.pinnedMessage != null) {
       pinnedMessage.setState(chat.pinnedMessage!);
     }
     AppManagers.socket.joinChat(chat.id.toString());
     AppManagers.socket.client?.once("CHAT_DETAIL", (data) {
+      if (AppControllers.chatList.activeChatId != chat.id) return;
       var chatDetailData = ChatDetail.fromJson(data);
       var c = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
       c.userActivity = chatDetailData.userActivity;
+      c.chatUser = chatDetailData.chatUser;
       c.chat.users = chatDetailData.chat.users;
+      c.hasActiveCall = chatDetailData.hasActiveCall;
       chatDetail.setState(c);
     });
     if (chat.chatType == ChatType.private) {
       AppManagers.socket.client?.on("USER_STATUS_CHANGED", (data) {
+        if (AppControllers.chatList.activeChatId != chat.id) return;
         var userActivity = UserActivity.fromJson(data);
         if (userActivity.userId == chat.getPrivateChatMemberId()) {
           var detail = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
@@ -73,59 +99,100 @@ class MessageController {
     }
     AppManagers.socket.client?.on("NEW_MESSAGE", (data) {
       var message = Message.fromJson(data);
-      if (message.chatId == chat.id) {
+      if (message.chatId == chat.id && AppControllers.chatList.activeChatId == chat.id) {
         addNewMessage(message);
+        readAllMessage([message]);
       }
     });
-    flutterListViewController.addListener(() {
-      if (flutterListViewController.position.pixels == 0) {
-        loadNextPage();
+    AppManagers.socket.client?.on("SEEN_MESSAGES", (data) {
+      //print("SEEN_MESSAGES EVENT $data");
+      if (data is List) {
+        var seenUsers = data.map((e) => SeenBy.fromJson(e)).toList();
+        var chatMessages = messages.valueOrNull ?? [];
+        for (var element in seenUsers) {
+          var message = chatMessages.firstWhereOrNull((m) => m.id == element.messageId);
+          if (message != null &&
+              !(message.seenBy?.any((s) => s.messageId == element.messageId && s.userId == element.userId) ?? true)) {
+            message.seenBy ??= [];
+            message.seenBy!.add(element);
+          }
+        }
+        messages.setState(chatMessages);
       }
     });
+    AppManagers.socket.client?.on("CHAT_USER_ROLE", (data) {
+      if (data is Map) {
+        var chatUser = ChatUser.fromJson(data);
+        var detail = chatDetail.valueOrNull;
+        if (detail != null) {
+          var chatUsers = chat.users ?? [];
+          var index = chatUsers.indexWhere((element) => element.id == chatUser.id);
+          if (index > -1) {
+            chatUsers[index].role = chatUser.role;
+            detail.chat.users![index] = chatUser;
+            chatDetail.setState(detail);
+          }
+        }
+      }
+    });
+    AppControllers.chatList.activeChatId = chat.id;
   }
   late final SState<ChatDetail> chatDetail;
   late final SReadOnlyState<Chat> chatStream;
   final messages = SState<List<Message>>();
 
   final favoritesMessage = SState<List<Message>>();
-  final pinnedMessage = SState<Message>();
+  final pinnedMessage = SState<Message?>();
   final replyMessage = SState<Message?>();
   final attachments = SState<List<File>>([]);
   final messageText = SState<String>("");
-  late final SReadOnlyState<Map<String, List<Message>>> messagesByDate;
+  final showBottomButton = SState(false);
+
+  late final SReadOnlyState<List<MessageListItem>> messagesWithDate;
+  late final SReadOnlyState<List<Message>> sortedMessages;
+
   final TextEditingController messageTextController = TextEditingController();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
   Chat get chat => chatStream.valueOrNull!;
 
-  int page = 1;
+  bool canLoadNextMessage = false;
+  bool canLoadPreviousMessage = true;
 
-  final RefreshController refreshController = RefreshController(initialRefresh: false);
-  final FlutterListViewController flutterListViewController = FlutterListViewController();
-  Future<void> loadMessages({bool? refresh}) async {
+  Future<void> loadMessages({int? loadMessageId}) async {
     try {
-      if (refresh != true) {
-        // AppProgressController.show();
+      if (loadMessageId != null) {
+        canLoadNextMessage = true;
       }
+
       var response = await AppServices.message.listMessages(
         chat.id.toString(),
-        page: page,
-        refresh: refresh,
+        startMessageId: loadMessageId,
       );
       if (response != null) {
-        if (refresh == true) {
-          messages.setState(response);
-        } else {
-          var m = messages.valueOrNull ?? [];
-          m.addAll(response);
-          messages.setState(m);
-        }
+        messages.setState(response);
 
         await readAllMessage(response);
-        if (refresh != true && response.isNotEmpty) {
-          // flutterListViewController.sliverController.ensureVisible(response.length);
-          // flutterListViewController.
-        }
-        refreshController.refreshCompleted();
+        _wait(() {
+          if (loadMessageId != null) {
+            scrollToMessage(loadMessageId);
+          }
+          itemScrollController.scrollListener((notification) {
+            var currentPixels = notification.position.pixels;
+            if (currentPixels == notification.position.maxScrollExtent) {
+              loadPreviousMessages();
+            }
+            if (currentPixels == notification.position.minScrollExtent) {
+              loadNextMessages();
+            }
+            if (currentPixels > 300) {
+              showBottomButton.setState(true);
+            } else {
+              showBottomButton.setState(false);
+            }
+          });
+        });
       }
     } catch (ex) {
       messages.setError(AppUtils.getErrorText(ex));
@@ -134,9 +201,51 @@ class MessageController {
     }
   }
 
-  Future<void> loadNextPage() async {
-    page += 1;
-    loadMessages();
+  Future<void> loadPreviousMessages() async {
+    if (!canLoadPreviousMessage) return;
+    var m = messages.valueOrNull ?? [];
+    var lastMessage = m.lastOrNull;
+    if (lastMessage == null) return;
+    var response = await AppServices.message.previousMessages(
+      chat.id.toString(),
+      lastMessage.id!,
+    );
+    if (response == null) {
+      AppUtils.showErrorSnackBar("Mesajlar yüklenemedi");
+      return;
+    }
+    if (response.isNotEmpty) {
+      m.addAll(response);
+      messages.setState(m);
+      return;
+    }
+    canLoadPreviousMessage = false;
+  }
+
+  Future<void> loadNextMessages() async {
+    if (!canLoadNextMessage) return;
+    var m = messages.valueOrNull ?? [];
+    var firstMessage = m.firstOrNull;
+    if (firstMessage == null) return;
+    var response = await AppServices.message.nextMessages(
+      chat.id.toString(),
+      firstMessage.id!,
+    );
+    if (response == null) {
+      AppUtils.showErrorSnackBar("Mesajlar yüklenemedi");
+      return;
+    }
+    if (response.isNotEmpty) {
+      var lastIndex = messages.valueOrNull?.length ?? 0;
+      m.addAll(response);
+      messages.setState(m);
+      lastIndex = m.length - lastIndex;
+      _wait(() {
+        scrollToIndex(lastIndex, duration: Durations.short1);
+      });
+      return;
+    }
+    canLoadNextMessage = false;
   }
 
   Future<void> readAllMessage(List<Message> messages) async {
@@ -181,7 +290,7 @@ class MessageController {
         chat.id.toString(),
         message,
         replyId: replyId,
-        attachments: attachments?.map((e) => e.file).toList(),
+        attachments: attachments,
       )
           .then((response) {
         if (response != null) {
@@ -207,9 +316,6 @@ class MessageController {
     var m = messages.valueOrNull ?? [];
     m.add(message);
     messages.setState(m);
-    flutterListViewController.sliverController.ensureVisible(m.length - 1);
-    //flutterListViewController.sliverController
-    //    .animateToIndex(m.length - 2, duration: const Duration(seconds: 2), curve: Curves.linear);
   }
 
   Future<void> addFavorites(Message message) async {
@@ -228,11 +334,24 @@ class MessageController {
 
   Future<void> pinMessage(Message message) async {
     try {
-      if (chat.id == null) return;
-      var response = await AppServices.message.pinMessage(chat.id.toString(), message.id!);
+      if (chat.id == null || message.id == null) return;
+      var response = await AppServices.chat.pinMessage(chat.id.toString(), message.id!);
       if (response != null) {
         chat.pinnedMessage = message;
         pinnedMessage.setState(message);
+      }
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+    }
+  }
+
+  Future<void> removePinMessage() async {
+    try {
+      if (chat.id == null) return;
+      var response = await AppServices.chat.removePinMessage(chat.id.toString());
+      if (response != null) {
+        chat.pinnedMessage = null;
+        pinnedMessage.setState(null);
       }
     } catch (ex) {
       AppUtils.showErrorSnackBar(ex);
@@ -244,13 +363,31 @@ class MessageController {
     if (detail == null) {
       detail = ChatDetail(chat: updatedChat);
     } else {
-      detail.chat = updatedChat;
+      detail.chat = detail.chat.copy(updatedChat);
     }
     chatDetail.setState(detail);
   }
 
+  void scrollToMessage(int messageId) {
+    var m = messages.valueOrNull ?? [];
+
+    var messageIndex = m.indexWhere((element) => element.id == messageId);
+
+    scrollToIndex(messageIndex);
+  }
+
+  void scrollToIndex(int index, {Duration? duration}) {
+    if (index < 0) return;
+    itemScrollController.scrollTo(index: index, duration: duration ?? Durations.medium3);
+  }
+
+  void scrollToBottom() {
+    itemScrollController.scrollToMax(duration: Durations.medium3);
+  }
+
   void dispose() {
+    itemScrollController.getAutoScrollController?.dispose();
     AppManagers.socket.leaveChat(chat.id.toString());
-    flutterListViewController.dispose();
+    AppControllers.chatList.activeChatId = null;
   }
 }

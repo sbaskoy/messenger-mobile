@@ -28,8 +28,11 @@ class EditChatController {
   Future<void> updateChat() async {
     try {
       AppProgressController.show();
-      var response = await AppServices.chat
-          .updateChat(chat.id.toString(), chatNameController.text, file: selectedGroupImage.valueOrNull);
+      var response = await AppServices.chat.updateChat(
+        chat.id.toString(),
+        chatNameController.text,
+        file: selectedGroupImage.valueOrNull,
+      );
       if (response != null) {
         AppControllers.chatList.updateChat(response);
         onSaved?.call(response);

@@ -23,7 +23,7 @@ class ChatListController {
 
   int archivePage = 1;
   int activePage = 1;
-
+  int? activeChatId;
   ChatListController() {
     orderedChats = chats.transform((value) {
       value.sort(_sortChat);
@@ -37,7 +37,7 @@ class ChatListController {
 
   Future<void> loadChats({bool? archive, bool? refresh}) async {
     try {
-      AppProgressController.show();
+      // AppProgressController.show();
       var response = await AppServices.chat.listChat(
         archive: archive,
         page: archive == true ? archivePage : activePage,
@@ -94,6 +94,9 @@ class ChatListController {
     } else {
       chat.messages![0] = message;
     }
+    if (message.chatId != activeChatId) {
+      chat.unSeenCount += 1;
+    }
     updateChat(chat);
   }
 
@@ -101,12 +104,12 @@ class ChatListController {
     if (chat.isArchived == 1) {
       var c = archivedChats.valueOrNull ?? [];
       var index = c.indexWhere((element) => element.id == chat.id);
-      c[index] = chat;
+      c[index] = c[index].copy(chat);
       archivedChats.setState(c);
     } else {
       var c = chats.valueOrNull ?? [];
       var index = c.indexWhere((element) => element.id == chat.id);
-      c[index] = chat;
+      c[index] = c[index].copy(chat);
       chats.setState(c);
     }
   }
@@ -124,6 +127,51 @@ class ChatListController {
         c.add(chat);
         chats.setState(c);
       }
+    }
+  }
+
+  Future<bool> archive(Chat chat) async {
+    try {
+      var response = await AppServices.chat.archiveChat(chat.id.toString());
+      if (response == null) {
+        return false;
+      }
+      var activeChats = chats.valueOrNull;
+      var archived = archivedChats.valueOrNull ?? [];
+      chat.isArchived = 1;
+      activeChats?.removeWhere((element) => element.id == chat.id);
+      archived.insert(0, chat);
+      if (activeChats != null) {
+        chats.setState(activeChats);
+      }
+      archivedChats.setState(archived);
+      return true;
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+      return false;
+    }
+  }
+
+  Future<bool> unArchive(Chat chat) async {
+    try {
+      var response = await AppServices.chat.unArchiveChat(chat.id.toString());
+      if (response == null) {
+        return false;
+      }
+      var activeChats = chats.valueOrNull ?? [];
+      var archived = archivedChats.valueOrNull ?? [];
+      chat.isArchived = 0;
+      activeChats.insert(0, chat);
+
+      archived.removeWhere((e) => e.id == chat.id);
+
+      chats.setState(activeChats);
+
+      archivedChats.setState(archived);
+      return true;
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+      return false;
     }
   }
 }

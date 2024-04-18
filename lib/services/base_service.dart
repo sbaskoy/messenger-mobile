@@ -9,8 +9,9 @@ abstract class IBaseService {
   late final Dio dio = createDio();
   Dio createDio() {
     var dio = Dio(BaseOptions(
+      
       baseUrl: url,
-      receiveTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 120),
       connectTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 10),
     ));

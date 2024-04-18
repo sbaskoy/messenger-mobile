@@ -14,7 +14,7 @@ class ChatListView extends StatefulWidget {
 }
 
 class _ChatListViewState extends State<ChatListView> {
-  final _controller = AppControllers.chatList..loadChats();
+  final _controller = AppControllers.chatList..loadChats(refresh: true);
   final ScrollController _scrollController = ScrollController();
   @override
   void initState() {

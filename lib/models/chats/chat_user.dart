@@ -5,6 +5,7 @@ class UserChatRole {
   static String get admin => "admin";
   static String get moderator => "moderator";
   static String get user => "user";
+  static String get removed => "removed";
 }
 
 class ChatUser {
@@ -16,6 +17,7 @@ class ChatUser {
   String? createdAt;
   User? user;
   User? addedByUser;
+  int? disableNotifications;
 
   ChatUser({
     this.id,
@@ -26,6 +28,7 @@ class ChatUser {
     this.createdAt,
     this.user,
     this.addedByUser,
+    this.disableNotifications,
   });
   ChatUser.fromJson(json) {
     id = json["id"];
@@ -34,6 +37,7 @@ class ChatUser {
     addedBy = json["added_by"];
     role = json["role"];
     createdAt = json["created_at"];
+    disableNotifications = json["disable_notifications"];
     var userJson = json["user"];
     if (userJson is Map) {
       user = User.fromJson(userJson);

@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
 import 'package:planner_messenger/models/auth/user.dart';
 import 'package:planner_messenger/models/chats/chat_user.dart';
@@ -47,9 +48,13 @@ class Chat {
     this.pinnedMessage,
     this.users,
     this.memberUserId,
+    this.chatType,
+    this.creatorUser,
+    this.memberUser,
+    this.photo,
   });
 
-  Chat.fromJson(Map<String, dynamic> json) {
+  Chat.fromJson(Map json) {
     id = json['id'];
     createdAt = json['created_at'];
     name = json['name'];
@@ -118,5 +123,38 @@ class Chat {
   String getChatName() {
     if (chatType == ChatType.group) return name ?? "";
     return creatorUserId == AppControllers.auth.user?.id ? (memberUser?.fullName ?? "") : (creatorUser?.fullName ?? "");
+  }
+
+  Chat copy(Chat? chat) {
+    return Chat(
+      id: chat?.id ?? id,
+      createdAt: chat?.createdAt ?? createdAt,
+      name: chat?.name ?? name,
+      creatorUserId: chat?.creatorUserId ?? creatorUserId,
+      isArchived: chat?.isArchived ?? isArchived,
+      isDeleted: chat?.isDeleted ?? isDeleted,
+      memberUserId: chat?.memberUserId ?? memberUserId,
+      messages: (chat?.messages?.isNotEmpty ?? false) ? chat?.messages : messages,
+      pinnedMessage: chat?.pinnedMessage ?? pinnedMessage,
+      pinnedMessageId: chat?.pinnedMessageId ?? pinnedMessageId,
+      projectId: chat?.projectId ?? projectId,
+      taskId: chat?.taskId ?? taskId,
+      unSeenCount: (chat?.unSeenCount ?? 0) > 0 ? (chat?.unSeenCount ?? 0) : unSeenCount,
+      users: (chat?.users?.isNotEmpty ?? false) ? chat?.users : users,
+      chatType: chat?.chatType ?? chatType,
+      creatorUser: chat?.creatorUser ?? creatorUser,
+      memberUser: chat?.memberUser ?? memberUser,
+      photo: chat?.photo ?? photo,
+    );
+  }
+
+  ChatUser? getCurrentChatUser() {
+    return users?.firstWhereOrNull((element) => element.userId == AppControllers.auth.user?.id);
+  }
+
+  bool isNotificationsActive() {
+    var chatUser = getCurrentChatUser();
+    if (chatUser == null) return false;
+    return chatUser.disableNotifications != 1;
   }
 }

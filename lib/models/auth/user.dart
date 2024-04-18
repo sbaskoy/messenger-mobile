@@ -33,3 +33,13 @@ class User {
     return photo?.replaceAll("viewFile/user_token", "viewImage/$id-$tenantId");
   }
 }
+
+class GroupCallUser {
+  User? user;
+  bool? isOwner;
+  GroupCallUser({this.isOwner, this.user});
+  GroupCallUser.fromJson(mapData) {
+    user = User.fromJson(mapData["user"]);
+    isOwner = mapData["isOwner"] ?? false;
+  }
+}

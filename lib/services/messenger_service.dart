@@ -6,25 +6,19 @@ import '../controllers/auth_controller.dart';
 import 'base_service.dart';
 
 class MessengerService extends IBaseService {
-  final AuthController authController;
-  MessengerService._internal({required this.authController}) : super(url: AppConstants.baseApiUrl) {
-    _setOptions();
+  //final AuthController authController;
+  MessengerService(AuthController authController) : super(url: AppConstants.baseApiUrl) {
+    _setOptions(authController);
   }
 
-  static MessengerService? _singleton;
-
-  factory MessengerService(AuthController authController) {
-    _singleton ??= MessengerService._internal(authController: authController);
-    return _singleton!;
-  }
-
-  void _setOptions() {
+  void _setOptions(AuthController authController) {
     dio.options.validateStatus = (status) => (status ?? 0) > 100 && (status ?? 0) < 501;
     //dio.options.sendTimeout = const Duration(seconds: 2);
     dio.options.connectTimeout = const Duration(seconds: 2);
+
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        var token = authController.accessToken;
+        var token = authController.accessToken();
         if (token?.isNotEmpty ?? false) {
           options.headers['Authorization'] = "Bearer $token";
         }

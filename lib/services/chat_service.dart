@@ -6,7 +6,9 @@ import 'package:planner_messenger/models/chats/chat_join_response.dart';
 import 'package:planner_messenger/models/message/chat_message_attachment.dart';
 import 'package:planner_messenger/services/messenger_service.dart';
 
+import '../models/auth/user.dart';
 import '../models/chats/chat.dart';
+import '../models/chats/chat_user.dart';
 
 class ChatService {
   final MessengerService service;
@@ -73,12 +75,15 @@ class ChatService {
   }
 
   Future<ApiInfoModel<Chat>?> archiveChat(String chatId) async {
-    var response = await service.dio.post(
-      "/chats/archive",
-      data: {
-        "chat_id": chatId,
-      },
-    );
+    var response = await service.dio.post("/chats/archive/$chatId");
+    if (response.data != null) {
+      return ApiInfoModel<Chat>.fromJson(response.data);
+    }
+    return null;
+  }
+
+  Future<ApiInfoModel<Chat>?> unArchiveChat(String chatId) async {
+    var response = await service.dio.post("/chats/un-archive/$chatId");
     if (response.data != null) {
       return ApiInfoModel<Chat>.fromJson(response.data);
     }
@@ -98,11 +103,12 @@ class ChatService {
     return null;
   }
 
-  Future<ApiInfoModel?> leaveChat(String chatId) async {
+  Future<ApiInfoModel?> leaveChat(String chatId, {int? userId}) async {
     var response = await service.dio.post(
       "/chats/leave",
       data: {
         "chat_id": chatId,
+        "user_id": userId,
       },
     );
     if (response.data != null) {
@@ -122,5 +128,72 @@ class ChatService {
       }
     }
     return null;
+  }
+
+  Future<List<ChatUser>?> addMembersToChat(String chatId, List<User> users) async {
+    var response = await service.dio.post("/chats/add-members/$chatId", data: {
+      "added_users": users.map((e) => e.id).toList(),
+    });
+    if (response.data != null) {
+      var jsonResponse = response.data;
+      if (jsonResponse is List) {
+        return jsonResponse.map((e) => ChatUser.fromJson(e)).toList();
+      }
+    }
+    return null;
+  }
+
+  Future<ChatUser?> updateChatUserRole({required String chatId, required int userId, required String role}) async {
+    var response = await service.dio.post(
+      "/chats/update-user-role/$chatId",
+      data: {
+        "user_id": userId,
+        "role": role,
+      },
+    );
+    if (response.data != null) {
+      var jsonResponse = response.data;
+      if (jsonResponse is Map) {
+        return ChatUser.fromJson(jsonResponse);
+      }
+    }
+    return null;
+  }
+
+  Future<ApiInfoModel?> pinMessage(String chatId, int messageId) async {
+    var response = await service.dio.post(
+      "/chats/pin-message/$chatId",
+      data: {
+        "message_id": messageId,
+      },
+    );
+    if (response.data != null) {
+      return ApiInfoModel.fromJson(response.data);
+    }
+    return null;
+  }
+
+  Future<ApiInfoModel?> removePinMessage(String chatId) async {
+    var response = await service.dio.post("/chats/remove-pin-message/$chatId");
+    if (response.data != null) {
+      return ApiInfoModel.fromJson(response.data);
+    }
+    return null;
+  }
+
+  Future<bool> disableChatNotification(String chatId) async {
+    var response = await service.dio.post("/chats/notifications/disable/$chatId");
+    if (response.data != null) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> enableChatNotification(String chatId) async {
+    var response = await service.dio.post("/chats/notifications/enable/$chatId");
+    if (response.data != null) {
+      return true;
+    }
+    return false;
   }
 }

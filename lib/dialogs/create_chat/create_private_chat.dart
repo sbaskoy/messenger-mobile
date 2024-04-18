@@ -81,7 +81,7 @@ class _CreatePrivateChatWidgetState extends State<CreatePrivateChatWidget> {
                           ),
                     ),
                     Positioned(
-                      right: 0,
+                      left: 0,
                       child: TextButton(
                         onPressed: Get.back,
                         child: const Text("Cancel"),

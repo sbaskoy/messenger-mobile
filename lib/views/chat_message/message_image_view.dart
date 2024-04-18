@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_brand_palettes/gradients.dart';
-import 'package:flutter_hsvcolor_picker/flutter_hsvcolor_picker.dart';
 import 'package:get/get.dart';
 import 'package:multi_image_layout/multi_image_layout.dart';
 import 'package:planner_messenger/controllers/message_controller.dart';
+import 'package:planner_messenger/utils/app_utils.dart';
 import 'package:planner_messenger/views/chat_message/edit_image_widget.dart';
 import 'package:planner_messenger/widgets/buttons/custom_icon_button.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -27,6 +26,12 @@ class _MessageFilesViewState extends State<MessageFilesView> {
   int _selectedIndex = 0;
   bool _editMode = false;
   double _penSize = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    AppUtils.clearTempDirectory();
+  }
 
   Color _penColor = Colors.blue;
   void _send() {
@@ -53,68 +58,74 @@ class _MessageFilesViewState extends State<MessageFilesView> {
                 var item = _items[index];
                 if (item.isDocument) {
                   return const Center(
-                    child: Icon(Icons.edit_document),
+                    child: Icon(
+                      Icons.insert_drive_file,
+                      size: 50,
+                    ),
                   );
                 }
-                return _editMode
-                    ? EditImageWidget(
-                        item: item,
-                        color: _penColor,
-                        size: _penSize,
-                        onUpdate: (data) {
+                return Center(
+                  child: AnimatedCrossFade(
+                    duration: Durations.medium4,
+                    firstChild: EditImageWidget(
+                      item: item,
+                      color: _penColor,
+                      size: _penSize,
+                      editMode: _editMode,
+                      onColorChanged: (color) {
+                        setState(() {
+                          _penColor = color;
+                        });
+                      },
+                      onSizeChanged: (size) {
+                        setState(() {
+                          _penSize = size;
+                        });
+                      },
+                      onDone: (data) {
+                        if (mounted) {
                           setState(() {
                             item.bytes = data;
-                          });
-                        },
-                      )
-                    : Image.memory(item.bytes);
-              },
-            ),
-            Positioned(
-                top: 20,
-                left: 10,
-                right: 10,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    AnimatedCrossFade(
-                      duration: Durations.medium3,
-                      firstChild: CUstomIconButton(
-                        color: context.theme.disabledColor.withOpacity(0.2),
-                        icon: Icons.close,
-                        onPressed: Get.back,
-                      ),
-                      secondChild: TextButton(
-                        onPressed: () {
-                          setState(() {
+                            item.updateOrCreateTemp();
                             _editMode = false;
                           });
-                        },
-                        child: const Text("Done"),
-                      ),
-                      crossFadeState: _editMode ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                        }
+                      },
                     ),
-                    CUstomIconButton(
-                      color: _editMode ? _penColor : context.theme.disabledColor.withOpacity(0.2),
-                      icon: Icons.edit,
-                      onPressed: () => setState(() {
-                        _editMode = true;
-                      }),
-                    ),
-                  ],
-                )),
-            Positioned(
-                top: 80,
-                right: 25,
+                    secondChild: Image.file(item.tempFile ?? item.file),
+                    crossFadeState: _editMode ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                  ),
+                );
+              },
+            ),
+            AnimatedPositioned(
+                duration: Durations.medium3,
+                top: _editMode ? -10 : 20,
+                left: 10,
+                right: 10,
                 child: AnimatedOpacity(
-                  opacity: _editMode ? 1 : 0,
                   duration: Durations.medium3,
-                  child: VerticalColorPicker(
-                    onChanged: (color) {
-                      setState(() {
-                        _penColor = color;
-                      });
-                    },
+                  opacity: _editMode ? 0 : 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IgnorePointer(
+                        ignoring: _editMode,
+                        child: CustomIconButton(
+                          color: context.theme.disabledColor.withOpacity(0.2),
+                          icon: Icons.close,
+                          onPressed: Get.back,
+                        ),
+                      ),
+                      if (!widget.files.first.isDocument)
+                        CustomIconButton(
+                          color: _editMode ? _penColor : context.theme.disabledColor.withOpacity(0.2),
+                          icon: Icons.edit,
+                          onPressed: () => setState(() {
+                            _editMode = true;
+                          }),
+                        ),
+                    ],
                   ),
                 )),
             AnimatedPositioned(
@@ -124,41 +135,6 @@ class _MessageFilesViewState extends State<MessageFilesView> {
               right: 10,
               child: _sendImageTab(),
             ),
-            Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
-              child: AnimatedOpacity(
-                opacity: _editMode ? 1 : 0,
-                duration: Durations.medium3,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CUstomIconButton(
-                      color: _penSize == 3 ? context.theme.disabledColor.withOpacity(0.5) : null,
-                      icon: Icons.thirteen_mp,
-                      onPressed: () => setState(() {
-                        _penSize = 3;
-                      }),
-                    ),
-                    CUstomIconButton(
-                      color: _penSize == 5 ? context.theme.disabledColor.withOpacity(0.5) : null,
-                      icon: Icons.thirteen_mp,
-                      onPressed: () => setState(() {
-                        _penSize = 5;
-                      }),
-                    ),
-                    CUstomIconButton(
-                      color: _penSize == 7 ? context.theme.disabledColor.withOpacity(0.5) : null,
-                      icon: Icons.thirteen_mp,
-                      onPressed: () => setState(() {
-                        _penSize = 7;
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-            )
           ],
         ),
       ),
@@ -265,7 +241,7 @@ class _MessageFilesViewState extends State<MessageFilesView> {
 }
 
 class VerticalColorPicker extends StatefulWidget {
-  final Function(Color color) onChanged;
+  final Function(Color color)? onChanged;
   const VerticalColorPicker({super.key, required this.onChanged});
 
   @override
@@ -281,7 +257,7 @@ class _VerticalColorPickerState extends State<VerticalColorPicker> {
     return GestureDetector(
       onPanUpdate: (details) {
         Color selectedColor = _googleGrad[(lastOffset.dy / _height * (_googleGrad.length - 1)).round()];
-        widget.onChanged.call(selectedColor);
+        widget.onChanged?.call(selectedColor);
         setState(() {
           lastOffset = details.localPosition;
         });

@@ -5,7 +5,7 @@ import 'package:planner_messenger/models/message/message.dart';
 import 'package:planner_messenger/models/message/seen_by.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
 
-import 'message_buble.dart';
+import 'message_bubble.dart';
 
 class MessageInfoView extends StatelessWidget {
   final Message message;
@@ -21,9 +21,15 @@ class MessageInfoView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            child: ChatMessageBubble(
-              canSwipe: false,
-              message: message,
+            child: SizedBox(
+              height: 300,
+              child: SingleChildScrollView(
+                child: ChatMessageBubble(
+                  showAllText: true,
+                  canSwipe: false,
+                  message: message,
+                ),
+              ),
             ),
           ),
           const Padding(

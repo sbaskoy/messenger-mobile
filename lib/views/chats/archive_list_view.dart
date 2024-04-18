@@ -14,7 +14,7 @@ class ArchiveListView extends StatefulWidget {
 }
 
 class _ArchiveListViewState extends State<ArchiveListView> {
-  final _controller = AppControllers.chatList..loadChats(archive: true);
+  final _controller = AppControllers.chatList..loadChats(archive: true, refresh: true);
 
   final ScrollController _scrollController = ScrollController();
   @override
