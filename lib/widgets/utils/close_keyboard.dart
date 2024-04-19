@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 class CloseKeyboardWidget extends StatelessWidget {
   final Widget child;
-  const CloseKeyboardWidget({Key? key, required this.child}) : super(key: key);
+  const CloseKeyboardWidget({super.key, required this.child});
 
   static closeKeyboard(BuildContext context) {
     FocusScopeNode currentFocus = FocusScope.of(context);

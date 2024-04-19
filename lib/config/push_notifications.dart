@@ -15,17 +15,18 @@ final FlutterLocalNotificationsPlugin plugins = FlutterLocalNotificationsPlugin(
 
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  FlutterAppBadger.updateBadgeCount(5);
+  await createNotificationChannel();
+  //FlutterAppBadger.updateBadgeCount(5);
 }
 
 Future _onSelectBackgroundNotification(NotificationResponse payload) async {
   log("Notification Select");
-  FlutterAppBadger.updateBadgeCount(0);
+  //FlutterAppBadger.updateBadgeCount(0);
 }
 
 Future _onSelectNotification(NotificationResponse payload) async {
   log("Notification Select");
-  FlutterAppBadger.updateBadgeCount(0);
+  //FlutterAppBadger.updateBadgeCount(0);
 }
 
 FirebaseOptions _firebaseOptions() {
@@ -50,11 +51,12 @@ FirebaseOptions _firebaseOptions() {
 Future<void> _initNotifications() async {
   FirebaseMessaging.instance.subscribeToTopic("all");
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message)async {
     RemoteNotification? notification = message.notification;
+    AndroidNotification? android=message.notification?.android;
     // AndroidNotification? android = message.notification?.android;
     log("Firebase Message ");
-    if (notification != null) {
+    if (notification != null && android != null) {
       log("Data->${message.data}");
       var chatId = message.data["chat_id"]?.toString();
 
@@ -62,7 +64,8 @@ Future<void> _initNotifications() async {
         return;
       }
 
-      FlutterAppBadger.updateBadgeCount(5);
+      //FlutterAppBadger.updateBadgeCount(5);
+
       var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         andChannel.id,
         andChannel.name,
@@ -74,6 +77,7 @@ Future<void> _initNotifications() async {
         priority: Priority.high,
         ticker: 'Planner Messenger',
       );
+
 
       var iOSChannelSpecifics = const DarwinNotificationDetails();
       var platformChannelSpecifics = NotificationDetails(
@@ -91,7 +95,7 @@ Future<void> _initNotifications() async {
   });
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     log("Clicked Message");
-    FlutterAppBadger.updateBadgeCount(0);
+    //FlutterAppBadger.updateBadgeCount(0);
   });
 }
 
@@ -125,11 +129,13 @@ Future<void> createNotificationChannel() async {
     android: initializationSettingsAndroid,
     iOS: initializationSettingsIOS,
   );
+ 
   plugins.initialize(
     initializationSettings,
     onDidReceiveBackgroundNotificationResponse: _onSelectBackgroundNotification,
     onDidReceiveNotificationResponse: _onSelectNotification,
   );
+  
   await _initNotifications();
 }
 
