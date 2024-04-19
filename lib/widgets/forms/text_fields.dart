@@ -14,7 +14,7 @@ class CustomTextField extends StatelessWidget {
   final int? maxLines;
   final bool? autoFocus;
   const CustomTextField({
-    Key? key,
+    super.key,
     this.hintText,
     this.labelText,
     this.prefixIcon,
@@ -25,7 +25,7 @@ class CustomTextField extends StatelessWidget {
     this.minLines,
     this.maxLines,
     this.autoFocus,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +53,13 @@ class CustomTextFieldWithoutPrefix extends StatelessWidget {
   final TextEditingController textEditingController;
   final bool autoFocus;
   const CustomTextFieldWithoutPrefix({
-    Key? key,
+    super.key,
     required this.hintText,
     required this.labelText,
     required this.textEditingController,
     required this.suffixIcon,
     this.autoFocus = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -99,14 +99,13 @@ class CustomPasswordField extends StatefulWidget {
   final TextEditingController textEditingController;
   final String? Function(String? value)? validator;
   const CustomPasswordField(
-      {Key? key,
+      {super.key,
       this.hintText,
       this.labelText,
       required this.widget,
       required this.textEditingController,
       required this.suffixIcon,
-      this.validator})
-      : super(key: key);
+      this.validator});
 
   @override
   State<CustomPasswordField> createState() => _CustomPasswordFieldState();

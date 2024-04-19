@@ -7,9 +7,8 @@ class CustomSnackBar extends SnackBar {
   final String text;
   final Color? bgColor;
   final Color? textColor;
-  CustomSnackBar(this.text, {Key? key, this.bgColor, this.textColor})
+  CustomSnackBar(this.text, {super.key, this.bgColor, this.textColor})
       : super(
-          key: key,
           content: BodyLargeText(
             text,
             fontSize: 15,

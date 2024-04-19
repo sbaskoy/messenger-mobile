@@ -6,8 +6,7 @@ class PrimaryAppButton extends StatelessWidget {
   final Color? bgColor;
   final double? width;
   final double? height;
-  const PrimaryAppButton({Key? key, required this.text, this.onTap, this.bgColor, this.width, this.height})
-      : super(key: key);
+  const PrimaryAppButton({super.key, required this.text, this.onTap, this.bgColor, this.width, this.height});
 
   @override
   Widget build(BuildContext context) {
