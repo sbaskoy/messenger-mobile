@@ -1,9 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_services.dart';
+import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
 import 'package:planner_messenger/models/auth/user.dart';
 import 'package:planner_messenger/models/chats/chat.dart';
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
@@ -19,7 +19,7 @@ class CreateGroupChatController {
   final groupName = SState<String>("");
   late final SReadOnlyState<List<User>> filteredUsers;
 
-  final selectedGroupImage = SState<File>();
+  final selectedGroupImage = SState<IFilePickerItem>();
   final TextEditingController groupNameField = TextEditingController();
 
   late final activeCreateButton =
@@ -74,7 +74,7 @@ class CreateGroupChatController {
               canSelectFile: false,
               onSelected: (selected) {
                 if (selected.isNotEmpty) {
-                  selectedGroupImage.setState(selected.first.file);
+                  selectedGroupImage.setState(selected.first);
                 }
               },
             );

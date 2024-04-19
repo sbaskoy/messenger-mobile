@@ -38,7 +38,7 @@ class Message {
   });
 
   GlobalKey widgetKey = GlobalKey();
-  
+
   bool isSystemMessage() => false;
 
   Message.fromJson(Map json) {
@@ -86,4 +86,5 @@ class Message {
   }
 
   final isSended = SState(true);
+  final sendProgress = SState(0);
 }

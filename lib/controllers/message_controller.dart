@@ -285,14 +285,16 @@ class MessageController {
       messageTextController.text = "";
 
       AppControllers.chatList.addNewMessage(messageItem);
-      AppServices.message
-          .sendMessage(
+      AppServices.message.sendMessage(
         chat.id.toString(),
         message,
         replyId: replyId,
         attachments: attachments,
-      )
-          .then((response) {
+        onSendProgress: (count, total) {
+          var progress = (count * 100) / total;
+          messageItem.sendProgress.setState(progress.toInt());
+        },
+      ).then((response) {
         if (response != null) {
           messageItem.id = response.id;
           messageItem.attachments = response.attachments;

@@ -78,7 +78,7 @@ class FileModel {
   Future<String> download() async {
     downloading.setState(true);
     String applicationDocumentPath = (await getApplicationCacheDirectory()).path;
-    var filePath = path.join(applicationDocumentPath, "contents", "$fileId.pdf");
+    var filePath = path.join(applicationDocumentPath, "contents", "$fileId.$fileExtension");
 
     if (await File(filePath).exists()) {
       downloading.setState(false);

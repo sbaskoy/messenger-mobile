@@ -84,7 +84,7 @@ class _EditChatDialogState extends State<EditChatDialog> {
                     return CircleAvatar(
                       radius: 50,
                       backgroundColor: Theme.of(context).disabledColor.withOpacity(0.2),
-                      backgroundImage: FileImage(data),
+                      backgroundImage: MemoryImage(data.bytes),
                     );
                   }),
                 ),

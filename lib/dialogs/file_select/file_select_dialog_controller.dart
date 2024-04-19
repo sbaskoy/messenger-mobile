@@ -6,19 +6,20 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
+import 'package:planner_messenger/utils/image_utils.dart';
+import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
 import 'package:s_state/s_state.dart';
 
 class IFilePickerItem {
-  final File file;
+  //final File file;
   final bool isDocument;
+  final String originalPath;
   late Uint8List bytes;
   String? name;
-  
-  IFilePickerItem({required this.file, required this.isDocument, this.name}) {
-    bytes = file.readAsBytesSync();
-  }
 
-  
+  IFilePickerItem({required this.bytes, required this.isDocument, required this.originalPath, this.name}) {
+    //bytes = file.readAsBytesSync();
+  }
 }
 
 class FileSelectDialogController {
@@ -46,20 +47,26 @@ class FileSelectDialogController {
     selectedPhotos.setState(selectedItems);
   }
 
-  void uploadSelected() async {
-    var selectedItems = selectedPhotos.valueOrNull ?? [];
-    var photos = await Future.wait(selectedItems.map((e) => e.getFile()));
-    Get.back();
-    onSelected?.call(photos.map((e) => IFilePickerItem(file: e, isDocument: false)).toList());
-  }
+  // void uploadSelected() async {
+  //   var selectedItems = selectedPhotos.valueOrNull ?? [];
+  //   var photos = await Future.wait(selectedItems.map((e) => e.getFile()));
+  //   Get.back();
+  //   onSelected?.call(photos.map((e) => IFilePickerItem(file: e, isDocument: false)).toList());
+  // }
 
   static Future<IFilePickerItem?> selectPhotoFromCamera() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
-    if (photo != null) {
-      return IFilePickerItem(file: File(photo.path), isDocument: false);
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
+      AppProgressController.show();
+      if (photo != null) {
+        var bytes = await ImageUtils.compressImageWithFile(photo.path);
+        return IFilePickerItem(bytes: bytes, isDocument: false, originalPath: photo.path, name: photo.name);
+      }
+      return null;
+    } finally {
+      AppProgressController.hide();
     }
-    return null;
   }
 
   void onSelectCamera() async {
@@ -73,33 +80,44 @@ class FileSelectDialogController {
   void onSelectGallery() async {
     var selectedItems = selectedPhotos.valueOrNull ?? [];
     if (selectedItems.isNotEmpty) {
-      uploadSelected();
+      // uploadSelected();
     } else {
-      final ImagePicker picker = ImagePicker();
-      final List<XFile> images = await picker.pickMultiImage(imageQuality: 50);
-      if (images.isNotEmpty) {
-        var photos = images.map((e) => IFilePickerItem(file: File(e.path), isDocument: false)).toList();
-        Get.back();
-        onSelected?.call(photos);
+      try {
+        final ImagePicker picker = ImagePicker();
+        final List<XFile> images = await picker.pickMultiImage(imageQuality: 50);
+        if (images.isNotEmpty) {
+          AppProgressController.show();
+          List<IFilePickerItem> photos = [];
+          for (var image in images) {
+            var bytes = await ImageUtils.compressImageWithFile(image.path);
+            photos.add(IFilePickerItem(bytes: bytes, isDocument: false, originalPath: image.path, name: image.name));
+          }
+          Get.back();
+          onSelected?.call(photos);
+        }
+      } finally {
+        AppProgressController.hide();
       }
     }
   }
 
   void onSelectFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-    );
-    if (result?.files.isNotEmpty ?? false) {
-      var files = result!.files
-          .map((e) => IFilePickerItem(
-                file: File(e.path!),
-                isDocument: true,
-                name: e.name,
-              ))
-          .toList();
-
-      Get.back();
-      onSelected?.call(files);
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+      );
+      if (result?.files.isNotEmpty ?? false) {
+        AppProgressController.show();
+        List<IFilePickerItem> files = [];
+        for (var file in result!.files) {
+          var bytes = await File(file.path!).readAsBytes();
+          files.add(IFilePickerItem(bytes: bytes, isDocument: true, originalPath: file.path!, name: file.name));
+        }
+        Get.back();
+        onSelected?.call(files);
+      }
+    } finally {
+      AppProgressController.hide();
     }
   }
 

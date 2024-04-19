@@ -85,7 +85,7 @@ class _CreateGroupChatWidgetState extends State<CreateGroupChatWidget> {
                     return CircleAvatar(
                       radius: 50,
                       backgroundColor: Theme.of(context).disabledColor.withOpacity(0.2),
-                      backgroundImage: data == null ? null : FileImage(data),
+                      backgroundImage: data == null ? null : MemoryImage(data.bytes),
                       child: data == null ? const Icon(Icons.image) : null,
                     );
                   }),

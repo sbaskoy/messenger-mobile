@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
 
@@ -14,34 +15,36 @@ final FlutterLocalNotificationsPlugin plugins = FlutterLocalNotificationsPlugin(
 
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  FlutterAppBadger.updateBadgeCount(5);
 }
 
 Future _onSelectBackgroundNotification(NotificationResponse payload) async {
   log("Notification Select");
+  FlutterAppBadger.updateBadgeCount(0);
 }
 
 Future _onSelectNotification(NotificationResponse payload) async {
   log("Notification Select");
+  FlutterAppBadger.updateBadgeCount(0);
 }
 
-FirebaseOptions _firebaseOptions(){
-  if(Platform.isIOS){
+FirebaseOptions _firebaseOptions() {
+  if (Platform.isIOS) {
     return const FirebaseOptions(
       apiKey: "AIzaSyAuCBHVo_D3uIbUWOFS2iK-ET4QcjgtdN8",
       appId: "1:570179754457:ios:997a6f8e697d71d7c021c8",
       messagingSenderId: "570179754457",
       projectId: "planner-messenger",
       storageBucket: "planner-messenger.appspot.com",
-      
     );
   }
   return const FirebaseOptions(
-      apiKey: "AIzaSyApNDjObz8YORbifw_3yrIWoZmaiYZgQcE",
-      appId: "1:570179754457:android:d20dd2e3de7859d8c021c8",
-      messagingSenderId: "570179754457",
-      projectId: "planner-messenger",
-      storageBucket: "planner-messenger.appspot.com",
-    );
+    apiKey: "AIzaSyApNDjObz8YORbifw_3yrIWoZmaiYZgQcE",
+    appId: "1:570179754457:android:d20dd2e3de7859d8c021c8",
+    messagingSenderId: "570179754457",
+    projectId: "planner-messenger",
+    storageBucket: "planner-messenger.appspot.com",
+  );
 }
 
 Future<void> _initNotifications() async {
@@ -53,10 +56,13 @@ Future<void> _initNotifications() async {
     log("Firebase Message ");
     if (notification != null) {
       log("Data->${message.data}");
-      var chatId=message.data["chat_id"];
-        if(chatId == AppControllers.chatList.activeChatId){
-          return;
-        }
+      var chatId = message.data["chat_id"]?.toString();
+
+      if (chatId == AppControllers.chatList.activeChatId?.toString()) {
+        return;
+      }
+
+      FlutterAppBadger.updateBadgeCount(5);
       var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         andChannel.id,
         andChannel.name,
@@ -74,12 +80,18 @@ Future<void> _initNotifications() async {
         android: androidPlatformChannelSpecifics,
         iOS: iOSChannelSpecifics,
       );
-      plugins.show(notification.hashCode, notification.title, notification.body, platformChannelSpecifics,
-          payload: "${notification.title}|${notification.body}",);
+      plugins.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        platformChannelSpecifics,
+        payload: "${notification.title}|${notification.body}",
+      );
     }
   });
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     log("Clicked Message");
+    FlutterAppBadger.updateBadgeCount(0);
   });
 }
 

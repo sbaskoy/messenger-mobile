@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import 'package:multi_image_layout/multi_image_layout.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
@@ -62,7 +61,7 @@ class ChatMessageBubble extends StatelessWidget {
         (loading, isSended, error, context) {
           return Container(
             width: Get.width,
-            margin: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
             //color: Colors.red,
             child: Align(
               alignment: isAuthorCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -145,7 +144,6 @@ class ChatMessageBubble extends StatelessWidget {
                                               const SizedBox(width: 5),
                                               Expanded(child: Text(attachment.file?.fileName ?? "")),
                                               attachment.file!.buildLoadingBar(),
-                                             
                                             ],
                                           ),
                                         ),
@@ -155,12 +153,25 @@ class ChatMessageBubble extends StatelessWidget {
                                 ),
                         ),
                       if (message.sendingAttachments?.isNotEmpty ?? false)
-                        const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.0),
+                        message.sendProgress.builder((loading, data, error, context) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: SizedBox(
                               height: 205,
-                              child: CenteredProgressIndicator(),
-                            )),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const CenteredProgressIndicator(),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("% $data"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
                       if (message.reply != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),

@@ -1,3 +1,5 @@
+
+
 import 'package:dio/dio.dart';
 
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
@@ -54,17 +56,13 @@ class MessageService {
     return _parseMessageList(response.data);
   }
 
-  Future<Message?> sendMessage(
-    String chatId,
-    String message, {
-    int? replyId,
-    List<IFilePickerItem>? attachments,
-  }) async {
+  Future<Message?> sendMessage(String chatId, String message,
+      {int? replyId, List<IFilePickerItem>? attachments, void Function(int count, int total)? onSendProgress}) async {
     var dataMap = <String, dynamic>{"message": message};
     if (replyId != null) {
       dataMap["reply_id"] = replyId;
     }
-   
+
     var response = await service.dio.post(
       "/messages/$chatId",
       data: FormData.fromMap(
@@ -74,16 +72,14 @@ class MessageService {
                   ?.map(
                     (e) => MultipartFile.fromBytes(
                       e.bytes,
-                      filename: e.name ??
-                          path.basename(
-                            e.file.path
-                          ),
+                      filename: e.name ?? path.basename(e.originalPath),
                     ),
                   )
                   .toList() ??
               []
         },
       ),
+      onSendProgress: onSendProgress,
     );
     if (response.data != null) {
       return Message.fromJson(response.data);
@@ -136,6 +132,4 @@ class MessageService {
     }
     return null;
   }
-
-
 }

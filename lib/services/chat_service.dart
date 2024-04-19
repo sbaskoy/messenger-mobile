@@ -1,6 +1,6 @@
-import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
 import 'package:planner_messenger/models/api_info_mode.dart';
 import 'package:planner_messenger/models/chats/chat_join_response.dart';
 import 'package:planner_messenger/models/message/chat_message_attachment.dart';
@@ -30,14 +30,19 @@ class ChatService {
     return null;
   }
 
-  Future<Chat?> createChat(String chatName, List<String> users, String chatType, {File? file}) async {
+  Future<Chat?> createChat(String chatName, List<String> users, String chatType, {IFilePickerItem? file}) async {
     var response = await service.dio.post(
       "/chats",
       data: FormData.fromMap({
         "name": chatName,
         "users": users.join(","),
         "chat_type": chatType,
-        "file": file != null ? await MultipartFile.fromFile(file.path) : null,
+        "file": file != null
+            ? MultipartFile.fromBytes(
+                file.bytes,
+                filename: file.name,
+              )
+            : null,
       }),
     );
     if (response.data != null) {
@@ -46,12 +51,12 @@ class ChatService {
     return response.data;
   }
 
-  Future<Chat?> updateChat(String chatId, String chatName, {File? file}) async {
+  Future<Chat?> updateChat(String chatId, String chatName, {IFilePickerItem? file}) async {
     var response = await service.dio.post(
       "/chats/update/$chatId",
       data: FormData.fromMap({
         "name": chatName,
-        "file": file != null ? await MultipartFile.fromFile(file.path) : null,
+        "file": file != null ? MultipartFile.fromBytes(file.bytes, filename: file.name) : null,
       }),
     );
     if (response.data != null) {

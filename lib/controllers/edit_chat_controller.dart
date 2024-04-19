@@ -1,7 +1,7 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:planner_messenger/constants/app_services.dart';
+import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
 import 'package:s_state/s_state.dart';
 
@@ -20,7 +20,7 @@ class EditChatController {
       groupName.setState(chatNameController.text);
     });
   }
-  final selectedGroupImage = SState<File>();
+  final selectedGroupImage = SState<IFilePickerItem>();
   final groupName = SState("");
   late final activeSaveButton = groupName.transform((value) => value.isNotEmpty);
   final TextEditingController chatNameController = TextEditingController();
@@ -55,7 +55,7 @@ class EditChatController {
               canSelectFile: false,
               onSelected: (selected) {
                 if (selected.isNotEmpty) {
-                  selectedGroupImage.setState(selected.first.file);
+                  selectedGroupImage.setState(selected.first);
                 }
               },
             );

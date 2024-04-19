@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
+import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
 import 'dart:ui' as ui;
 import "dart:math" as math;
 
@@ -97,11 +98,13 @@ class _EditImageWidgetState extends State<EditImageWidget> {
 
   void _save() async {
     if (widget.onDone != null && editor != null && image != null) {
+      AppProgressController.show();
       var data = await saveImageFromCustomPainter(
         editor!,
         Size(image!.width.toDouble(), image!.height.toDouble()),
         Get.size,
       );
+      AppProgressController.hide();
       if (data != null) {
         widget.onDone?.call(data);
       }
