@@ -44,6 +44,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   late final _controller = MessageController(chat: widget.chat)..loadMessages(loadMessageId: widget.loadMessageId);
 
   Timer? timer;
+  FocusNode _messageTextFocusNode=new FocusNode();
   @override
   void initState() {
     super.initState();
@@ -195,6 +196,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                     maxHeight: 300,
                   ),
                   child: CupertinoTextField(
+                    focusNode: _messageTextFocusNode,
                     onSubmitted: (value) => _controller.sendMessage(),
                     controller: _controller.messageTextController,
                     onChanged: _onMessageInputChange,
@@ -407,7 +409,10 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             message: item.message!,
             chat: _controller.chat,
             onPinned: _controller.pinMessage,
-            onReply: _controller.replyMessage.setState,
+            onReply: (message){
+              _messageTextFocusNode.requestFocus();
+              _controller.replyMessage.setState(message);
+            },
             onAddFavorite: _controller.addFavorites,
             onInfo: (m) => Get.to(MessageInfoView(message: m)),
           );
