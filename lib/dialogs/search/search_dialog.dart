@@ -187,7 +187,7 @@ class _SearchDialogState extends State<SearchDialog> {
               onTap: () {
                 Get.to(
                     () => MessageView(
-                          chat: message.chat!,
+                          chatId: message.chat!.id!,
                           loadMessageId: message.id,
                         ),
                     transition: Transition.rightToLeft);

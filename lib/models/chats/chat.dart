@@ -139,7 +139,7 @@ class Chat {
       pinnedMessageId: chat?.pinnedMessageId ?? pinnedMessageId,
       projectId: chat?.projectId ?? projectId,
       taskId: chat?.taskId ?? taskId,
-      unSeenCount: (chat?.unSeenCount ?? 0) > 0 ? (chat?.unSeenCount ?? 0) : unSeenCount,
+      unSeenCount: chat?.unSeenCount != null ? chat!.unSeenCount : unSeenCount,
       users: (chat?.users?.isNotEmpty ?? false) ? chat?.users : users,
       chatType: chat?.chatType ?? chatType,
       creatorUser: chat?.creatorUser ?? creatorUser,

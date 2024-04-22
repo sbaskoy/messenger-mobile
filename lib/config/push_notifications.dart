@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -7,7 +8,10 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
+import 'package:planner_messenger/views/chat_message/message_view.dart';
+import 'package:planner_messenger/views/login_view.dart';
 
 const AndroidNotificationChannel andChannel =
     AndroidNotificationChannel("id", 'high_importance_channel', description: "Notification");
@@ -23,12 +27,27 @@ Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
 
 Future _onSelectBackgroundNotification(NotificationResponse payload) async {
   log("Notification Select");
-  //FlutterAppBadger.updateBadgeCount(0);
+  log("Notification Select On  app");
+  try {
+    if (payload.payload == null) return;
+    var messageData = jsonDecode(payload.payload!);
+    var chatId = int.tryParse(messageData["chat_id"]?.toString() ?? "");
+    if (chatId != null) {
+      Get.offAll(() => LoginView(chatId: chatId));
+    }
+  } catch (_) {}
 }
 
 Future _onSelectNotification(NotificationResponse payload) async {
-  log("Notification Select");
-
+  log("Notification Select On  app");
+  try {
+    if (payload.payload == null) return;
+    var messageData = jsonDecode(payload.payload!);
+    var chatId = int.tryParse(messageData["chat_id"]?.toString() ?? "");
+    if (chatId != null) {
+      Get.to(() => MessageView(chatId: chatId));
+    }
+  } catch (_) {}
   //FlutterAppBadger.updateBadgeCount(0);
 }
 
@@ -51,7 +70,7 @@ FirebaseOptions _firebaseOptions() {
   );
 }
 
-void increaseApplicationBadgeCount() async {
+Future<void> increaseApplicationBadgeCount() async {
   try {
     int badgeNumber = await FlutterDynamicIcon.getApplicationIconBadgeNumber();
     FlutterDynamicIcon.setApplicationIconBadgeNumber(badgeNumber + 1);
@@ -106,7 +125,7 @@ Future<void> _initNotifications() async {
         notification.title,
         notification.body,
         platformChannelSpecifics,
-        payload: "${notification.title}|${notification.body}",
+        payload: jsonEncode(message.data),
       );
     }
     await _setForegroundNotificationSetting(false);

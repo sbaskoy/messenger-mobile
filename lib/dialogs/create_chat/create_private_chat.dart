@@ -49,7 +49,7 @@ class _CreatePrivateChatWidgetState extends State<CreatePrivateChatWidget> {
       );
       if (chatResponse != null) {
         Get.back();
-        Get.to(() => MessageView(chat: chatResponse));
+        Get.to(() => MessageView(chatId: chatResponse.id!));
         AppControllers.chatList.addChat(chatResponse);
       }
     } catch (ex) {

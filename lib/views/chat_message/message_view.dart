@@ -17,6 +17,7 @@ import 'package:planner_messenger/utils/app_utils.dart';
 import 'package:planner_messenger/views/chat_message/message_info.dart';
 import 'package:planner_messenger/views/chat_message/reply_message_bubble.dart';
 import 'package:planner_messenger/views/chats/chat_detail_view.dart';
+import 'package:planner_messenger/views/home_view.dart';
 import 'package:planner_messenger/widgets/buttons/custom_icon_button.dart';
 import 'package:planner_messenger/widgets/buttons/custom_text_button.dart';
 import 'package:planner_messenger/widgets/list_view/scrollable_list_view.dart';
@@ -24,6 +25,7 @@ import 'package:planner_messenger/widgets/list_view/scrollable_list_view.dart';
 import 'package:planner_messenger/widgets/progress_indicator/centered_progress_indicator.dart';
 import 'package:planner_messenger/widgets/texts/centered_error_text.dart';
 import 'package:planner_messenger/widgets/utils/close_keyboard.dart';
+import 'package:planner_messenger/widgets/utils/shimmer_container.dart';
 
 import '../../models/chats/chat.dart';
 
@@ -32,16 +34,16 @@ import 'message_bubble.dart';
 import 'message_image_view.dart';
 
 class MessageView extends StatefulWidget {
-  final Chat chat;
+  final int chatId;
   final int? loadMessageId;
-  const MessageView({super.key, required this.chat, this.loadMessageId});
+  const MessageView({super.key, required this.chatId, this.loadMessageId});
 
   @override
   State<MessageView> createState() => _MessageViewState();
 }
 
 class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
-  late final _controller = MessageController(chat: widget.chat)..loadMessages(loadMessageId: widget.loadMessageId);
+  late final _controller = MessageController(chatId: widget.chatId)..getChatDetail(loadMessageId: widget.loadMessageId);
 
   Timer? timer;
   @override
@@ -66,28 +68,50 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   }
 
   void _onMessageInputChange(String val) {
-    if (_controller.chat.chatType == ChatType.group) return;
+    var chat = _controller.chatDetail.valueOrNull?.chat;
+    if (chat == null || chat.chatType == ChatType.group) return;
     if (_controller.typingModel.valueOrNull?.typing == false) {
-      AppManagers.socket.typing(widget.chat.id.toString(), true);
+      AppManagers.socket.typing(widget.chatId.toString(), true);
     }
     timer?.cancel();
     Timer(const Duration(seconds: 1), () {
-      AppManagers.socket.typing(widget.chat.id.toString(), false);
+      AppManagers.socket.typing(widget.chatId.toString(), false);
     });
+  }
+
+  void _goBack() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+      return;
+    }
+    Get.offAll(() => const HomeView());
   }
 
   @override
   Widget build(BuildContext context) {
-    // _controller.readAllMessage();
+    return PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          _goBack();
+        },
+        child: _buildBody(context));
+  }
 
+  Scaffold _buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goBack,
+        ),
         title: _controller.chatDetail.builder((loading, data, error, context) {
           return ListTile(
             contentPadding: EdgeInsets.zero,
             leading: _buildChatImage(data?.chat),
-            title: _buildChatTitle(data?.chat),
-            subtitle: _buildChatSubTitle(data),
+            title: data == null ? const ShimmerContainer(height: 20) : _buildChatTitle(data.chat),
+            subtitle: data == null ? const ShimmerContainer(height: 10) : _buildChatSubTitle(data),
           );
         }),
       ),
@@ -405,7 +429,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
           return ChatMessageBubble(
             canSwipe: true,
             message: item.message!,
-            chat: _controller.chat,
+            chat: _controller.activeChat,
             onPinned: _controller.pinMessage,
             onReply: _controller.replyMessage.setState,
             onAddFavorite: _controller.addFavorites,

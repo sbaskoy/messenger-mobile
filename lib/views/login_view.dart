@@ -11,7 +11,8 @@ import '../constants/app_images.dart';
 import '../widgets/forms/text_fields.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+  final int? chatId;
+  const LoginView({super.key, this.chatId});
 
   @override
   State<LoginView> createState() => _LoginViewState();

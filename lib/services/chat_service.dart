@@ -1,7 +1,7 @@
-
 import 'package:dio/dio.dart';
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
 import 'package:planner_messenger/models/api_info_mode.dart';
+import 'package:planner_messenger/models/chats/chat_detail.dart';
 import 'package:planner_messenger/models/chats/chat_join_response.dart';
 import 'package:planner_messenger/models/message/chat_message_attachment.dart';
 import 'package:planner_messenger/services/messenger_service.dart';
@@ -25,6 +25,17 @@ class ChatService {
       var jsonResponse = response.data;
       if (jsonResponse is List) {
         return jsonResponse.map((e) => Chat.fromJson(e)).toList();
+      }
+    }
+    return null;
+  }
+
+  Future<ChatDetail?> getChatDetail(int chatId) async {
+    var response = await service.dio.get("/chats/detail/$chatId");
+    if (response.data != null) {
+      var jsonResponse = response.data;
+      if (jsonResponse is Map) {
+        return ChatDetail.fromJson(jsonResponse);
       }
     }
     return null;

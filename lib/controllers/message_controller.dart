@@ -42,9 +42,8 @@ class MessageListItem {
 
 class MessageController {
   //final Chat chat;
-
-  MessageController({required Chat chat}) {
-    chatDetail = SState(ChatDetail(chat: chat));
+  final int chatId;
+  MessageController({required this.chatId}) {
     chatStream = chatDetail.transform((value) => value.chat);
     messageTextController.addListener(() {
       messageText.setState(messageTextController.text);
@@ -73,34 +72,21 @@ class MessageController {
       //response.sort((a, b) => b.date.tryParseDateTime()!.compareTo(a.date.tryParseDateTime()!));
       return response;
     });
-    if (chat.pinnedMessage != null) {
-      pinnedMessage.setState(chat.pinnedMessage!);
-    }
-    AppManagers.socket.joinChat(chat.id.toString());
-    AppManagers.socket.client?.once("CHAT_DETAIL", (data) {
-      if (AppControllers.chatList.activeChatId != chat.id) return;
-      var chatDetailData = ChatDetail.fromJson(data);
-      var c = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
-      c.userActivity = chatDetailData.userActivity;
-      c.chatUser = chatDetailData.chatUser;
-      c.chat.users = chatDetailData.chat.users;
-      c.hasActiveCall = chatDetailData.hasActiveCall;
-      chatDetail.setState(c);
-    });
-    if (chat.chatType == ChatType.private) {
-      AppManagers.socket.client?.on("USER_STATUS_CHANGED", (data) {
-        if (AppControllers.chatList.activeChatId != chat.id) return;
-        var userActivity = UserActivity.fromJson(data);
-        if (userActivity.userId == chat.getPrivateChatMemberId()) {
-          var detail = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
-          detail.userActivity = userActivity;
-          chatDetail.setState(detail);
-        }
-      });
-    }
+
+    // AppManagers.socket.client?.once("CHAT_DETAIL", (data) {
+    //   if (AppControllers.chatList.activeChatId != chat.id) return;
+    //   var chatDetailData = ChatDetail.fromJson(data);
+    //   var c = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
+    //   c.userActivity = chatDetailData.userActivity;
+    //   c.chatUser = chatDetailData.chatUser;
+    //   c.chat.users = chatDetailData.chat.users;
+    //   c.hasActiveCall = chatDetailData.hasActiveCall;
+    //   chatDetail.setState(c);
+    // });
+
     AppManagers.socket.client?.on("NEW_MESSAGE", (data) {
       var message = Message.fromJson(data);
-      if (message.chatId == chat.id && AppControllers.chatList.activeChatId == chat.id) {
+      if (message.chatId == chatId && AppControllers.chatList.activeChatId == chatId) {
         addNewMessage(message);
         readAllMessage([message]);
       }
@@ -125,7 +111,8 @@ class MessageController {
       if (data is Map) {
         var chatUser = ChatUser.fromJson(data);
         var detail = chatDetail.valueOrNull;
-        if (detail != null) {
+        var chat = detail?.chat;
+        if (detail != null && chat != null) {
           var chatUsers = chat.users ?? [];
           var index = chatUsers.indexWhere((element) => element.id == chatUser.id);
           if (index > -1) {
@@ -136,16 +123,14 @@ class MessageController {
         }
       }
     });
-
     AppManagers.socket.client?.on("TYPING", (data) {
       if (data is Map) {
         var model = TypingModel.fromJson(data);
         typingModel.setState(model);
       }
     });
-    AppControllers.chatList.activeChatId = chat.id;
   }
-  late final SState<ChatDetail> chatDetail;
+  final SState<ChatDetail> chatDetail = SState();
   late final SReadOnlyState<Chat> chatStream;
   final messages = SState<List<Message>>();
 
@@ -164,10 +149,43 @@ class MessageController {
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
-  Chat get chat => chatStream.valueOrNull!;
+  Chat? get activeChat => chatStream.valueOrNull;
 
   bool canLoadNextMessage = false;
   bool canLoadPreviousMessage = true;
+
+  void _initChat(Chat chat) {
+    if (chat.pinnedMessage != null) {
+      pinnedMessage.setState(chat.pinnedMessage!);
+    }
+    AppManagers.socket.joinChat(chat.id.toString());
+    if (chat.chatType == ChatType.private) {
+      AppManagers.socket.client?.on("USER_STATUS_CHANGED", (data) {
+        if (AppControllers.chatList.activeChatId != chat.id) return;
+        var userActivity = UserActivity.fromJson(data);
+        if (userActivity.userId == chat.getPrivateChatMemberId()) {
+          var detail = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
+          detail.userActivity = userActivity;
+          chatDetail.setState(detail);
+        }
+      });
+    }
+    AppControllers.chatList.activeChatId = chat.id;
+  }
+
+  Future<void> getChatDetail({int? loadMessageId}) async {
+    try {
+      var response = await AppServices.chat.getChatDetail(chatId);
+      if (response != null) {
+        chatDetail.setState(response);
+        _initChat(response.chat);
+        await loadMessages(loadMessageId: loadMessageId);
+      }
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+      Get.back();
+    }
+  }
 
   Future<void> loadMessages({int? loadMessageId}) async {
     try {
@@ -176,7 +194,7 @@ class MessageController {
       }
 
       var response = await AppServices.message.listMessages(
-        chat.id.toString(),
+        chatId.toString(),
         startMessageId: loadMessageId,
       );
       if (response != null) {
@@ -216,7 +234,7 @@ class MessageController {
     var lastMessage = m.lastOrNull;
     if (lastMessage == null) return;
     var response = await AppServices.message.previousMessages(
-      chat.id.toString(),
+      chatId.toString(),
       lastMessage.id!,
     );
     if (response == null) {
@@ -237,7 +255,7 @@ class MessageController {
     var firstMessage = m.firstOrNull;
     if (firstMessage == null) return;
     var response = await AppServices.message.nextMessages(
-      chat.id.toString(),
+      chatId.toString(),
       firstMessage.id!,
     );
     if (response == null) {
@@ -258,11 +276,13 @@ class MessageController {
   }
 
   Future<void> readAllMessage(List<Message> messages) async {
+    var chat = chatDetail.valueOrNull?.chat;
+    if (chat == null) return;
     var m = messages
         .where((element) => !(element.seenBy?.any((seenBy) => seenBy.userId == AppControllers.auth.user?.id) ?? false))
         .toList();
     //if (m.isEmpty || chat.id == null) return;
-    var response = await AppServices.message.seenMessages(chat.id.toString(), m);
+    var response = await AppServices.message.seenMessages(chatId.toString(), m);
     if (response) {
       chat.unSeenCount = 0;
       AppControllers.chatList.updateChat(chat);
@@ -271,8 +291,9 @@ class MessageController {
 
   Future<void> sendMessage({List<IFilePickerItem>? attachments}) async {
     try {
-      var message = messageTextController.text.trimLeft();
-      if ((message.isEmpty && (attachments?.isEmpty ?? true)) || chat.id == null) return;
+      var chat = chatDetail.valueOrNull?.chat;
+      var message = messageTextController.text.trimLeft().trimRight();
+      if ((message.isEmpty && (attachments?.isEmpty ?? true)) || chat == null || chat.id == null) return;
       var replyId = replyMessage.valueOrNull?.id;
 
       var messageItem = Message(
@@ -331,7 +352,8 @@ class MessageController {
 
   Future<void> addFavorites(Message message) async {
     try {
-      if (chat.id == null) return;
+      var chat = chatDetail.valueOrNull?.chat;
+      if (chat == null || chat.id == null) return;
       var response = await AppServices.message.saveFavorite(chat.id.toString(), [message]);
       if (response != null) {
         var f = favoritesMessage.valueOrNull ?? [];
@@ -345,7 +367,8 @@ class MessageController {
 
   Future<void> pinMessage(Message message) async {
     try {
-      if (chat.id == null || message.id == null) return;
+      var chat = chatDetail.valueOrNull?.chat;
+      if (chat == null || chat.id == null || message.id == null) return;
       var response = await AppServices.chat.pinMessage(chat.id.toString(), message.id!);
       if (response != null) {
         chat.pinnedMessage = message;
@@ -358,7 +381,8 @@ class MessageController {
 
   Future<void> removePinMessage() async {
     try {
-      if (chat.id == null) return;
+      var chat = chatDetail.valueOrNull?.chat;
+      if (chat == null || chat.id == null) return;
       var response = await AppServices.chat.removePinMessage(chat.id.toString());
       if (response != null) {
         chat.pinnedMessage = null;
@@ -398,7 +422,7 @@ class MessageController {
 
   void dispose() {
     itemScrollController.getAutoScrollController?.dispose();
-    AppManagers.socket.leaveChat(chat.id.toString());
+    AppManagers.socket.leaveChat(chatId.toString());
     AppControllers.chatList.activeChatId = null;
   }
 }

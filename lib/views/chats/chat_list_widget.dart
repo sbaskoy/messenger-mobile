@@ -83,7 +83,7 @@ class ChatItem extends StatelessWidget {
         ListTile(
           onTap: () {
             Get.to(
-              () => MessageView(chat: item),
+              () => MessageView(chatId: item.id!),
               transition: Transition.rightToLeft,
             );
           },
