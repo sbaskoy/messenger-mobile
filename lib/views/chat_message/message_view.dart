@@ -46,7 +46,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   late final _controller = MessageController(chatId: widget.chatId)..getChatDetail(loadMessageId: widget.loadMessageId);
 
   Timer? timer;
-  FocusNode _messageTextFocusNode=new FocusNode();
+  final FocusNode _messageTextFocusNode = FocusNode();
   @override
   void initState() {
     super.initState();
@@ -386,7 +386,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                       ),
                     ),
                   ),
-                  if (chatUser?.role != UserChatRole.admin)
+                  if (chatUser?.role == UserChatRole.admin)
                     CustomTextButton(
                       text: "remove",
                       onTap: _controller.removePinMessage,
@@ -433,7 +433,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             message: item.message!,
             chat: _controller.activeChat,
             onPinned: _controller.pinMessage,
-            onReply: (message){
+            onReply: (message) {
               _messageTextFocusNode.requestFocus();
               _controller.replyMessage.setState(message);
             },
