@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 import 'package:planner_messenger/constants/app_controllers.dart';
 
 import 'package:planner_messenger/utils/app_utils.dart';
@@ -13,14 +14,14 @@ class ChatListView extends StatefulWidget {
   State<ChatListView> createState() => _ChatListViewState();
 }
 
-class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver{
+class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver {
   final _controller = AppControllers.chatList..loadChats(refresh: true);
   final ScrollController _scrollController = ScrollController();
-
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
         AppControllers.chatList.loadNextPage();
@@ -28,34 +29,19 @@ class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver
     });
   }
 
-@override
-        void didChangeAppLifecycleState(AppLifecycleState state) {
-            super.didChangeAppLifecycleState(state);
-            switch (state) {
-            case AppLifecycleState.inactive:
-                print('appLifeCycleState inactive');
-                break;
-            case AppLifecycleState.resumed:
-                _controller.loadChats(refresh: true);
-                break;
-            case AppLifecycleState.paused:
-                print('appLifeCycleState paused');
-                break;
-       
-              case AppLifecycleState.detached:
-               print('appLifeCycleState detached');
-                break;
-              case AppLifecycleState.hidden:
-                print('appLifeCycleState hidden');
-                break;
-            }
-        }
-
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _controller.loadChats(refresh: true);
+    }
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     super.dispose();
+    _scrollController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override

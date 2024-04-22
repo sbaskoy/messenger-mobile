@@ -4,18 +4,20 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
+
+import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
 
 const AndroidNotificationChannel andChannel =
     AndroidNotificationChannel("id", 'high_importance_channel', description: "Notification");
 // ignore: unnecessary_new
-final FlutterLocalNotificationsPlugin plugins = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   await createNotificationChannel();
+  increaseApplicationBadgeCount();
   //FlutterAppBadger.updateBadgeCount(5);
 }
 
@@ -26,6 +28,7 @@ Future _onSelectBackgroundNotification(NotificationResponse payload) async {
 
 Future _onSelectNotification(NotificationResponse payload) async {
   log("Notification Select");
+
   //FlutterAppBadger.updateBadgeCount(0);
 }
 
@@ -48,14 +51,22 @@ FirebaseOptions _firebaseOptions() {
   );
 }
 
+void increaseApplicationBadgeCount() async {
+  try {
+    int badgeNumber = await FlutterDynamicIcon.getApplicationIconBadgeNumber();
+    FlutterDynamicIcon.setApplicationIconBadgeNumber(badgeNumber + 1);
+  } catch (_) {}
+}
+
 Future<void> _initNotifications() async {
   FirebaseMessaging.instance.subscribeToTopic("all");
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message)async {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android=message.notification?.android;
+    AndroidNotification? android = message.notification?.android;
     // AndroidNotification? android = message.notification?.android;
     log("Firebase Message ");
+    increaseApplicationBadgeCount();
     if (notification != null && android != null) {
       log("Data->${message.data}");
       var chatId = message.data["chat_id"]?.toString();
@@ -63,9 +74,6 @@ Future<void> _initNotifications() async {
       if (chatId == AppControllers.chatList.activeChatId?.toString()) {
         return;
       }
-
-      //FlutterAppBadger.updateBadgeCount(5);
-
       var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         andChannel.id,
         andChannel.name,
@@ -78,13 +86,12 @@ Future<void> _initNotifications() async {
         ticker: 'Planner Messenger',
       );
 
-
       var iOSChannelSpecifics = const DarwinNotificationDetails();
       var platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSChannelSpecifics,
       );
-      plugins.show(
+      flutterLocalNotificationsPlugin.show(
         notification.hashCode,
         notification.title,
         notification.body,
@@ -107,7 +114,7 @@ Future<void> setFirebaseApp() async {
 
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   FirebaseMessaging.instance.setDeliveryMetricsExportToBigQuery(true);
-  await plugins
+  await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(andChannel);
 
@@ -116,6 +123,9 @@ Future<void> setFirebaseApp() async {
     badge: true,
     sound: true,
   );
+
+
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -129,13 +139,13 @@ Future<void> createNotificationChannel() async {
     android: initializationSettingsAndroid,
     iOS: initializationSettingsIOS,
   );
- 
-  plugins.initialize(
+
+  flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveBackgroundNotificationResponse: _onSelectBackgroundNotification,
     onDidReceiveNotificationResponse: _onSelectNotification,
   );
-  
+
   await _initNotifications();
 }
 

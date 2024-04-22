@@ -1,3 +1,4 @@
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_services.dart';
 import 'package:planner_messenger/extensions/string_extension.dart';
@@ -61,6 +62,7 @@ class ChatListController {
             chats.setState(c);
           }
         }
+        _setUnreadNotificationCount();
       }
     } catch (ex) {
       if (archive == true) {
@@ -172,6 +174,16 @@ class ChatListController {
     } catch (ex) {
       AppUtils.showErrorSnackBar(ex);
       return false;
+    }
+  }
+
+  void _setUnreadNotificationCount() {
+    var totalUnreadCount =
+        chats.valueOrNull?.fold(0, (previousValue, element) => previousValue + element.unSeenCount) ?? 0;
+    if (totalUnreadCount > 0) {
+      FlutterAppBadger.updateBadgeCount(totalUnreadCount);
+    } else {
+      FlutterAppBadger.removeBadge();
     }
   }
 }

@@ -208,15 +208,16 @@ class ChatMessageBubble extends StatelessWidget {
                                   fontSize: 10,
                                 ),
                           ),
-                          Icon(
-                            isSended == true ? Icons.done_all : Icons.timer,
-                            size: 15,
-                            color: chat?.chatType == ChatType.private && isAuthorCurrentUser
-                                ? ((message.seenBy?.any((s) => s.userId == memberUser) ?? false)
-                                    ? context.theme.primaryColor
-                                    : null)
-                                : null,
-                          )
+                          if (isAuthorCurrentUser)
+                            Icon(
+                              isSended == true ? Icons.done_all : Icons.timer,
+                              size: 15,
+                              color: chat?.chatType == ChatType.private && isAuthorCurrentUser
+                                  ? ((message.seenBy?.any((s) => s.userId == memberUser) ?? false)
+                                      ? context.theme.primaryColor
+                                      : null)
+                                  : null,
+                            )
                         ],
                       ),
                     ],

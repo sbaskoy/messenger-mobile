@@ -37,18 +37,28 @@ class MessageView extends StatefulWidget {
   State<MessageView> createState() => _MessageViewState();
 }
 
-class _MessageViewState extends State<MessageView> {
+class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   late final _controller = MessageController(chat: widget.chat)..loadMessages(loadMessageId: widget.loadMessageId);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _controller.loadMessages();
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
     _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:planner_messenger/config/push_notifications.dart';
 import 'package:planner_messenger/dialogs/search/search_dialog.dart';
 
 import '../constants/app_controllers.dart';
@@ -16,14 +17,14 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin {
+class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController tabController;
   var fabIcon = Icons.message;
 
   @override
   void initState() {
     super.initState();
-
+    WidgetsBinding.instance.addObserver(this);
     tabController = TabController(vsync: this, length: 3)
       ..addListener(() {
         setState(() {
@@ -42,16 +43,24 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       });
   }
 
-
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      flutterLocalNotificationsPlugin.cancelAll();
+    }
+  }
 
   @override
   void dispose() {
     super.dispose();
     tabController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override
   Widget build(BuildContext context) {
+    flutterLocalNotificationsPlugin.cancelAll();
     return Scaffold(
       appBar: AppBar(
         title: Text(
