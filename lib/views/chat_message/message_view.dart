@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 
 import 'package:get/get.dart';
 
 import 'package:multi_image_layout/multi_image_layout.dart';
+import 'package:planner_messenger/constants/app_managers.dart';
 
 import 'package:planner_messenger/controllers/message_controller.dart';
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog.dart';
@@ -40,6 +43,7 @@ class MessageView extends StatefulWidget {
 class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   late final _controller = MessageController(chat: widget.chat)..loadMessages(loadMessageId: widget.loadMessageId);
 
+  Timer? timer;
   @override
   void initState() {
     super.initState();
@@ -59,6 +63,17 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
     super.dispose();
     _controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
+  }
+
+  void _onMessageInputChange(String val) {
+    if (_controller.chat.chatType == ChatType.group) return;
+    if (_controller.typingModel.valueOrNull?.typing == false) {
+      AppManagers.socket.typing(widget.chat.id.toString(), true);
+    }
+    timer?.cancel();
+    Timer(const Duration(seconds: 1), () {
+      AppManagers.socket.typing(widget.chat.id.toString(), false);
+    });
   }
 
   @override
@@ -182,6 +197,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                   child: CupertinoTextField(
                     onSubmitted: (value) => _controller.sendMessage(),
                     controller: _controller.messageTextController,
+                    onChanged: _onMessageInputChange,
                     placeholder: "Write a message ....",
                     keyboardType: TextInputType.multiline,
                     maxLines: 5,
@@ -296,6 +312,10 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             ? "Last seen ${lastSeen.dateFormat(CustomDateFormats.yyyyMMddHHmm)}"
             : "";
     var text = data.chat.chatType == ChatType.private ? lastSeen : users;
+    final subTitleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontSize: 12,
+          color: Colors.white,
+        );
     return InkWell(
       onTap: () {
         Get.to(
@@ -305,14 +325,16 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
           ),
         );
       },
-      child: Text(
-        text,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontSize: 12,
-              color: Colors.white,
-            ),
-      ),
+      child: _controller.typingModel.builder((loading, data, error, context) {
+        if (data != null && data.typing == true) {
+          return Text("typing ...", style: subTitleStyle);
+        }
+        return Text(
+          text,
+          overflow: TextOverflow.ellipsis,
+          style: subTitleStyle,
+        );
+      }),
     );
   }
 

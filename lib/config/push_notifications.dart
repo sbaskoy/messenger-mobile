@@ -58,15 +58,23 @@ void increaseApplicationBadgeCount() async {
   } catch (_) {}
 }
 
+Future<void> _setForegroundNotificationSetting(bool show) async {
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: show,
+    badge: show,
+    sound: show,
+  );
+}
+
 Future<void> _initNotifications() async {
   FirebaseMessaging.instance.subscribeToTopic("all");
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
+    // AndroidNotification? android = message.notification?.android;
     // AndroidNotification? android = message.notification?.android;
     log("Firebase Message ");
-    var messageId=int.tryParse(message.data["id"].toString());
+    var messageId = int.tryParse(message.data["id"].toString());
     increaseApplicationBadgeCount();
     if (notification != null && messageId != null) {
       log("Data->${message.data}");
@@ -92,11 +100,7 @@ Future<void> _initNotifications() async {
         android: androidPlatformChannelSpecifics,
         iOS: iOSChannelSpecifics,
       );
-        await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+      await _setForegroundNotificationSetting(true);
       await flutterLocalNotificationsPlugin.show(
         messageId,
         notification.title,
@@ -105,11 +109,7 @@ Future<void> _initNotifications() async {
         payload: "${notification.title}|${notification.body}",
       );
     }
-           await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: false,
-    badge: false,
-    sound: false,
-  );
+    await _setForegroundNotificationSetting(false);
   });
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     log("Clicked Message");
@@ -129,13 +129,7 @@ Future<void> setFirebaseApp() async {
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(andChannel);
 
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: false,
-    badge: false,
-    sound: false,
-  );
-
-
+  await _setForegroundNotificationSetting(false);
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -146,10 +140,7 @@ Future<void> setFirebaseApp() async {
 Future<void> createNotificationChannel() async {
   var initializationSettingsAndroid = const AndroidInitializationSettings('@mipmap/ic_launcher');
   var initializationSettingsIOS = const DarwinInitializationSettings(
-    defaultPresentAlert: true,
-    defaultPresentBadge: true,
-    defaultPresentSound: true
-  );
+      defaultPresentAlert: true, defaultPresentBadge: true, defaultPresentSound: true);
   var initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
     iOS: initializationSettingsIOS,

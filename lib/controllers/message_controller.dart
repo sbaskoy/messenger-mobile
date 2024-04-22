@@ -15,6 +15,7 @@ import 'package:planner_messenger/models/chats/chat_detail.dart';
 import 'package:planner_messenger/models/chats/chat_user.dart';
 import 'package:planner_messenger/models/message/message.dart';
 import 'package:planner_messenger/models/message/seen_by.dart';
+import 'package:planner_messenger/models/typing_model.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
 
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
@@ -135,6 +136,13 @@ class MessageController {
         }
       }
     });
+
+    AppManagers.socket.client?.on("TYPING", (data) {
+      if (data is Map) {
+        var model = TypingModel.fromJson(data);
+        typingModel.setState(model);
+      }
+    });
     AppControllers.chatList.activeChatId = chat.id;
   }
   late final SState<ChatDetail> chatDetail;
@@ -147,6 +155,7 @@ class MessageController {
   final attachments = SState<List<File>>([]);
   final messageText = SState<String>("");
   final showBottomButton = SState(false);
+  final typingModel = SState<TypingModel>(TypingModel(null, false));
 
   late final SReadOnlyState<List<MessageListItem>> messagesWithDate;
   late final SReadOnlyState<List<Message>> sortedMessages;

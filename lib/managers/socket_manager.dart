@@ -46,6 +46,10 @@ class SocketManager {
     _socket?.emit("LEAVE_CHAT", {"chat_id": chatId});
   }
 
+  void typing(String chatId, bool typing) {
+    _socket?.emit("TYPING", {"chat_id": chatId, "typing": typing});
+  }
+
   Future<dynamic> request(String event, Map data) {
     return Future(() {
       _socket?.emitWithAck(event, data);
