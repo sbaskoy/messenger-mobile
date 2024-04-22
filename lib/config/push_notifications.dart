@@ -66,8 +66,9 @@ Future<void> _initNotifications() async {
     AndroidNotification? android = message.notification?.android;
     // AndroidNotification? android = message.notification?.android;
     log("Firebase Message ");
+    var messageId=int.tryParse(message.data["id"].toString());
     increaseApplicationBadgeCount();
-    if (notification != null && android != null) {
+    if (notification != null && messageId != null) {
       log("Data->${message.data}");
       var chatId = message.data["chat_id"]?.toString();
 
@@ -91,14 +92,24 @@ Future<void> _initNotifications() async {
         android: androidPlatformChannelSpecifics,
         iOS: iOSChannelSpecifics,
       );
-      flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
+        await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+      await flutterLocalNotificationsPlugin.show(
+        messageId,
         notification.title,
         notification.body,
         platformChannelSpecifics,
         payload: "${notification.title}|${notification.body}",
       );
     }
+           await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: false,
+    badge: false,
+    sound: false,
+  );
   });
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     log("Clicked Message");
@@ -119,9 +130,9 @@ Future<void> setFirebaseApp() async {
       ?.createNotificationChannel(andChannel);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
+    alert: false,
+    badge: false,
+    sound: false,
   );
 
 
@@ -134,7 +145,11 @@ Future<void> setFirebaseApp() async {
 
 Future<void> createNotificationChannel() async {
   var initializationSettingsAndroid = const AndroidInitializationSettings('@mipmap/ic_launcher');
-  var initializationSettingsIOS = const DarwinInitializationSettings();
+  var initializationSettingsIOS = const DarwinInitializationSettings(
+    defaultPresentAlert: true,
+    defaultPresentBadge: true,
+    defaultPresentSound: true
+  );
   var initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
     iOS: initializationSettingsIOS,
