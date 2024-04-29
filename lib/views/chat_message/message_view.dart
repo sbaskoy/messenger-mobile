@@ -447,7 +447,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                         Get.to(MessageInfoView(message: data));
                       },
                       child: Text(
-                        data.message ?? "",
+                        data.message,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                       ),

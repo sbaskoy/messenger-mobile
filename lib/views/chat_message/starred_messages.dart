@@ -33,7 +33,7 @@ class _StarredMessageViewState extends State<StarredMessagesView> {
       var searchTerm = search.toLowerCase();
       return messages.where((starredItem) {
         var message = starredItem.message;
-        return (message?.message?.toLowerCase().contains(searchTerm) ?? false) ||
+        return (message?.message.toLowerCase().contains(searchTerm) ?? false) ||
             (message?.user?.fullName?.toLowerCase().contains(searchTerm) ?? false);
       }).toList();
     });

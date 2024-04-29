@@ -281,7 +281,7 @@ class ChatMessageBubble extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.end,
           children: [
             ReadMoreText(
-              message.message ?? "",
+              message.message,
               trimLines: 3,
               trimMode: showAllText ? TrimMode.Length : TrimMode.Line,
               colorClickableText: Colors.pink,

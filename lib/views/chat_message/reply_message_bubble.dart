@@ -35,7 +35,7 @@ class ReplyMessageBubble extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    data.message ?? "",
+                    data.message,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],

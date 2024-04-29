@@ -124,11 +124,11 @@ class ChatItem extends StatelessWidget {
       }
     }
     return Text(
-      "$startText${(message.message?.isNotEmpty ?? false) ? message.message : 'File attachment'}",
+      "$startText${(message.message.isNotEmpty) ? message.message : 'File attachment'}",
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: (message.message?.isNotEmpty ?? false) ? null : context.theme.disabledColor.withOpacity(0.4),
+            color: (message.message.isNotEmpty) ? null : context.theme.disabledColor.withOpacity(0.4),
           ),
     );
   }
