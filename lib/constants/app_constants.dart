@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../utils/hex_color.dart';
 
+//const url = 'ws://192.168.2.5:4443';
+const _url = 'wss://v3demo.mediasoup.org:4443';
+
 class AppConstants {
   AppConstants._();
   static String get baseUrl => "http://ganimuhendislik.com:1885";
+  static String get callApiUrl => _url;
 //  static String get baseUrl => "http://192.168.2.5:1881";
   static String get baseApiUrl => baseUrl;
   static String get tagGroupId => "1";

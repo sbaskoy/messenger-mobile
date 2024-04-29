@@ -17,15 +17,12 @@ import 'package:planner_messenger/models/message/message.dart';
 import 'package:planner_messenger/models/message/seen_by.dart';
 import 'package:planner_messenger/models/typing_model.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
+import 'package:planner_messenger/views/chat_message/message_view.dart';
 
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
 
 import 'package:s_state/s_state.dart';
 import 'package:scrollable_positioned_list_extended/scrollable_positioned_list_extended.dart';
-
-// int _messagesSortCompate(Message a, Message b){
-//   return b.createdAt.tryParseDateTime()!.compareTo(a.createdAt.tryParseDateTime()!);
-// }
 
 void _wait(VoidCallback callback) {
   Future.delayed(Durations.medium3).then((value) => callback());
@@ -73,17 +70,6 @@ class MessageController {
       return response;
     });
 
-    // AppManagers.socket.client?.once("CHAT_DETAIL", (data) {
-    //   if (AppControllers.chatList.activeChatId != chat.id) return;
-    //   var chatDetailData = ChatDetail.fromJson(data);
-    //   var c = chatDetail.valueOrNull ?? ChatDetail(chat: chat);
-    //   c.userActivity = chatDetailData.userActivity;
-    //   c.chatUser = chatDetailData.chatUser;
-    //   c.chat.users = chatDetailData.chat.users;
-    //   c.hasActiveCall = chatDetailData.hasActiveCall;
-    //   chatDetail.setState(c);
-    // });
-
     AppManagers.socket.client?.on("NEW_MESSAGE", (data) {
       var message = Message.fromJson(data);
       if (message.chatId == chatId && AppControllers.chatList.activeChatId == chatId) {
@@ -127,6 +113,20 @@ class MessageController {
       if (data is Map) {
         var model = TypingModel.fromJson(data);
         typingModel.setState(model);
+      }
+    });
+    AppManagers.socket.client?.on("CALL_STARTED", (data) {
+      var detail = chatDetail.valueOrNull;
+      if (detail != null) {
+        detail.hasActiveCall = true;
+        chatDetail.setState(detail);
+      }
+    });
+    AppManagers.socket.client?.on("CALL_ENDED", (data) {
+      var detail = chatDetail.valueOrNull;
+      if (detail != null) {
+        detail.hasActiveCall = false;
+        chatDetail.setState(detail);
       }
     });
   }
@@ -390,6 +390,47 @@ class MessageController {
       }
     } catch (ex) {
       AppUtils.showErrorSnackBar(ex);
+    }
+  }
+
+  Future<void> deleteMessage(Message message) async {
+    try {
+      var chat = chatDetail.valueOrNull?.chat;
+      if (chat == null || chat.id == null || message.id == null) return;
+      var response = await AppServices.message.deleteMessage(chat.id.toString(), message.id.toString());
+      if (response != null) {
+        var m = messages.valueOrNull ?? [];
+        var index = m.indexWhere((element) => element.id == message.id);
+        m[index].isDeleted = true;
+        m[index].deletedBy = AppControllers.auth.user;
+        messages.setState(m);
+      }
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+    }
+  }
+
+  Future<void> forwardMessages(int forwardedChatId) async {
+    try {
+      AppProgressController.show();
+      var m = messages.valueOrNull ?? [];
+      var selectedMessages = m.where((element) => element.isSelected.valueOrNull == true).toList();
+      if (selectedMessages.isEmpty) return;
+      var response = await AppServices.message.forwardMessages(
+        forwardedChatId.toString(),
+        selectedMessages.map((e) => e.id!).toList(),
+      );
+      if (response != null) {
+        AppControllers.chatList.addNewMessage(response.last);
+        Get.off(
+          () => MessageView(chatId: forwardedChatId),
+          preventDuplicates: false,
+        );
+      }
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+    } finally {
+      AppProgressController.hide();
     }
   }
 

@@ -1,15 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:get/get.dart';
 
 import 'package:multi_image_layout/multi_image_layout.dart';
+import 'package:planner_messenger/constants/app_controllers.dart';
 import 'package:planner_messenger/constants/app_managers.dart';
 
 import 'package:planner_messenger/controllers/message_controller.dart';
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog.dart';
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
+import 'package:planner_messenger/dialogs/select_chat_dialog.dart';
 import 'package:planner_messenger/extensions/string_extension.dart';
 import 'package:planner_messenger/models/chats/chat_user.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
@@ -17,6 +21,7 @@ import 'package:planner_messenger/utils/app_utils.dart';
 import 'package:planner_messenger/views/chat_message/message_info.dart';
 import 'package:planner_messenger/views/chat_message/reply_message_bubble.dart';
 import 'package:planner_messenger/views/chats/chat_detail_view.dart';
+import 'package:planner_messenger/views/calls/group_call_screen.dart';
 import 'package:planner_messenger/views/home_view.dart';
 import 'package:planner_messenger/widgets/buttons/custom_icon_button.dart';
 import 'package:planner_messenger/widgets/buttons/custom_text_button.dart';
@@ -47,6 +52,9 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
   Timer? timer;
   final FocusNode _messageTextFocusNode = FocusNode();
+
+  bool _selectMode = false;
+
   @override
   void initState() {
     super.initState();
@@ -113,6 +121,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             leading: _buildChatImage(data?.chat),
             title: data == null ? const ShimmerContainer(height: 20) : _buildChatTitle(data.chat),
             subtitle: data == null ? const ShimmerContainer(height: 10) : _buildChatSubTitle(data),
+            trailing: data == null ? null : _buildCallButton(data),
           );
         }),
       ),
@@ -167,7 +176,37 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   }
 
   Widget _buildMessageInput(BuildContext context) {
-    return _controller.chatDetail.builder(
+    var firstWidget = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      child: Row(
+        children: [
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  _selectMode = false;
+                });
+              },
+              child: const Text("Cancel")),
+          const Spacer(),
+          CustomIconButton(
+            icon: Icons.forward,
+            onPressed: () {
+              AppUtils.showFlexibleDialog(
+                initHeight: 1,
+                context: context,
+                builder: (c, scrollController, p2) => SelectChatDialog(
+                  onSelected: (selected) {
+                    _controller.forwardMessages(selected.id!);
+                  },
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    var secondWidget = _controller.chatDetail.builder(
       (loading, data, error, context) {
         var currentUser = data?.chatUser;
         if (currentUser?.role == UserChatRole.removed) {
@@ -190,11 +229,12 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                       return FileSelectDialog(
                         onSelected: (selected) {
                           Get.to(
-                              () => MessageFilesView(
-                                    files: selected,
-                                    controller: _controller,
-                                  ),
-                              transition: Transition.downToUp);
+                            () => MessageFilesView(
+                              files: selected,
+                              controller: _controller,
+                            ),
+                            transition: Transition.downToUp,
+                          );
                         },
                       );
                     },
@@ -292,6 +332,12 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
         );
       },
     );
+    return AnimatedCrossFade(
+      firstChild: firstWidget,
+      secondChild: secondWidget,
+      crossFadeState: _selectMode ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+      duration: Durations.medium1,
+    );
   }
 
   Widget _buildChatImage(Chat? chat) {
@@ -302,25 +348,46 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildChatTitle(Chat? chat) => InkWell(
-        onTap: () {
-          if (chat != null) {
-            Get.to(
-              () => ChatDetailView(
-                chatDetailStream: _controller.chatDetail,
-                onUpdated: _controller.chatUpdated,
-              ),
-            );
-          }
-        },
-        child: Text(
-          chat?.getChatName() ?? "",
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
-                fontSize: 20,
-              ),
-        ),
-      );
+  Widget _buildCallButton(ChatDetail data) {
+    var user = AppControllers.auth.user;
+    if (user == null) return const SizedBox();
+    return CustomIconButton(
+      icon: Icons.call,
+      color: data.hasActiveCall ? context.theme.primaryColor : null,
+      onPressed: () {
+        Get.to(
+          () => GroupCallScreen(
+            chatId: data.chat.id!,
+            userId: user.id.toString(),
+            displayName: user.fullName ?? "",
+            isOwner: data.hasActiveCall == false,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChatTitle(Chat? chat) {
+    return InkWell(
+      onTap: () {
+        if (chat != null) {
+          Get.to(
+            () => ChatDetailView(
+              chatDetailStream: _controller.chatDetail,
+              onUpdated: _controller.chatUpdated,
+            ),
+          );
+        }
+      },
+      child: Text(
+        chat?.getChatName() ?? "",
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+      ),
+    );
+  }
 
   Widget _buildChatSubTitle(ChatDetail? data) {
     if (data == null) return const SizedBox();
@@ -429,6 +496,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             );
           }
           return ChatMessageBubble(
+            selectMode: _selectMode,
             canSwipe: true,
             message: item.message!,
             chat: _controller.activeChat,
@@ -439,6 +507,19 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             },
             onAddFavorite: _controller.addFavorites,
             onInfo: (m) => Get.to(MessageInfoView(message: m)),
+            onForward: (message) async {
+              await Future.delayed(Durations.medium2);
+              message.isSelected.setState(true);
+              setState(() {
+                _selectMode = true;
+              });
+            },
+            onDeleted: (m) async {
+              var res = await AppUtils.buildYesOrNoAlert(context, "Bu mesajı herkesten silinecek. Emin misiniz?");
+              if (res) {
+                _controller.deleteMessage(m);
+              }
+            },
           );
         },
       );

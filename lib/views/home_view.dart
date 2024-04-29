@@ -6,7 +6,7 @@ import 'package:planner_messenger/dialogs/search/search_dialog.dart';
 import '../constants/app_controllers.dart';
 import '../dialogs/create_chat/create_chat_dialog.dart';
 import '../utils/app_utils.dart';
-import 'call_list_view.dart';
+import 'calls/call_list_view.dart';
 import 'chats/archive_list_view.dart';
 import 'chats/chat_list_view.dart';
 
@@ -47,7 +47,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      flutterLocalNotificationsPlugin.cancelAll();
+     // flutterLocalNotificationsPlugin.cancelAll();
     }
   }
 
@@ -139,6 +139,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                   ]),
         ],
         bottom: TabBar(
+          
           padding: EdgeInsets.zero,
           labelPadding: EdgeInsets.zero,
           tabs: const [
@@ -151,6 +152,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       ),
       body: TabBarView(
         controller: tabController,
+        
         children: const [
           ChatListView(),
           ArchiveListView(),

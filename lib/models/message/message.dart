@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
 import 'package:planner_messenger/models/message/chat_message_attachment.dart';
@@ -10,7 +12,7 @@ import 'seen_by.dart';
 
 class Message {
   int? chatId;
-  String? message;
+  String? _message;
   int? id;
   int? messageTypeId;
   String? createdAt;
@@ -22,11 +24,14 @@ class Message {
   List<ChatMessageAttachment>? attachments;
   List<IFilePickerItem>? sendingAttachments;
   Chat? chat;
+  late bool isDeleted;
+  late bool isForwarded;
+  User? deletedBy;
   Message({
     this.chatId,
-    this.message,
     this.id,
     this.messageTypeId,
+    String? message,
     this.createdAt,
     this.createdUserId,
     this.seenBy,
@@ -35,15 +40,24 @@ class Message {
     this.reply,
     this.attachments,
     this.sendingAttachments,
-  });
+    this.isDeleted = false,
+    this.isForwarded = false,
+    this.deletedBy,
+  }) {
+    _message = message;
+  }
+
+  final isSelected = SState(false);
 
   GlobalKey widgetKey = GlobalKey();
 
   bool isSystemMessage() => false;
 
+  String get message => isDeleted ? "This message has been deleted by ${deletedBy?.fullName}" : _message ?? "";
+
   Message.fromJson(Map json) {
     chatId = json['chat_id'];
-    message = json['message'];
+    _message = json['message'];
     id = json['id'];
     messageTypeId = json['message_type_id'];
     createdAt = json['created_at'];
@@ -65,12 +79,15 @@ class Message {
     if (chatJsonResponse is Map) {
       chat = Chat.fromJson(chatJsonResponse);
     }
+    isDeleted = json["is_deleted"] ?? false;
+    isForwarded = json["is_forwarded"] ?? false;
+    deletedBy = json['deleted_by'] != null ? User.fromJson(json['deleted_by']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['chat_id'] = chatId;
-    data['message'] = message;
+    data['message'] = _message;
     data['id'] = id;
     data['message_type_id'] = messageTypeId;
     data['created_at'] = createdAt;

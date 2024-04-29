@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:planner_messenger/constants/app_controllers.dart';
 import '../constants/app_managers.dart';
 import '../models/call/incoming_call_data_model.dart';
 import '../widgets/buttons/custom_icon_button.dart';
 import 'chats/chat_list_widget.dart';
-import 'group_call_screen.dart';
+import 'calls/group_call_screen.dart';
 
 class CallRingView extends StatefulWidget {
   final Widget child;
@@ -22,7 +23,7 @@ class _CallRingViewState extends State<CallRingView> {
     super.initState();
     AppManagers.socket.isConnected.listen((value) {
       if (value == true) {
-        AppManagers.socket.client?.on("NEW_GROUP_CALL", (data) {
+        AppManagers.socket.client?.on("NEW_CALL", (data) {
           if (data is Map) {
             var callData = IncomingCallData.fromJson(data);
             setState(() {
@@ -55,7 +56,9 @@ class _CallRingViewState extends State<CallRingView> {
                         const Divider(),
                         Row(
                           children: [
-                            Expanded(child: ChatItem(item: incomingCallData!.chat)),
+                            Expanded(
+                              child: ChatItem(item: incomingCallData!.chat),
+                            ),
                             Wrap(
                               children: [
                                 CustomIconButton(
@@ -76,7 +79,9 @@ class _CallRingViewState extends State<CallRingView> {
                                     Get.to(
                                       () => GroupCallScreen(
                                         chatId: incomingCallData!.chat.id!,
-                                        answer: true,
+                                        displayName: AppControllers.auth.user?.fullName ?? "",
+                                        userId: AppControllers.auth.user?.id?.toString() ?? "",
+                                        isOwner: false,
                                       ),
                                     );
                                     setState(() {

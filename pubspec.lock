@@ -258,7 +258,7 @@ packages:
     source: hosted
     version: "2.2.1"
   equatable:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: equatable
       sha256: c2b87cb7756efdf69892005af546c56c0b5037f54d2a88269b4f347a505e3ca2
@@ -274,7 +274,7 @@ packages:
     source: hosted
     version: "1.0.0"
   expandable_bottom_sheet:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: expandable_bottom_sheet
       sha256: d62455231ccd53bf7a153c87e2cdecd2c8e7d737cb5262a5fc9481c5e3aed7d1
@@ -439,7 +439,7 @@ packages:
     source: hosted
     version: "1.5.0"
   flutter_bloc:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_bloc
       sha256: cdd1351ced09eeb46cfa7946e095b7679344af927415ca9cd972928fa6d5b23f
@@ -601,7 +601,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_webrtc:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_webrtc
       sha256: "2f17fb96e0c9c6ff75f6b1c36d94755461fc7f36a5c28386f5ee5a18b98688c8"
@@ -865,7 +865,7 @@ packages:
     source: hosted
     version: "0.8.0"
   mediasoup_client_flutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: mediasoup_client_flutter
       sha256: e872c8ee5a5dc28362f163b64098907d0620d0e0184d8dcb4bebcb4eaf7827af
@@ -1120,6 +1120,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  protoo_client:
+    dependency: transitive
+    description:
+      name: protoo_client
+      sha256: a17071440dfad0523b6327a33fe2053a3eebee22a5126109102096481d989a12
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.3"
   provider:
     dependency: transitive
     description:
@@ -1152,6 +1160,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
+  retry:
+    dependency: transitive
+    description:
+      name: retry
+      sha256: "822e118d5b3aafed083109c72d5f484c6dc66707885e07c0fbcb8b986bba7efc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
   rxdart:
     dependency: transitive
     description:
@@ -1169,7 +1185,7 @@ packages:
     source: hosted
     version: "0.0.1+6"
   scroll_to_index:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: scroll_to_index
       sha256: b707546e7500d9f070d63e5acf74fd437ec7eeeb68d3412ef7b0afada0b4f176
@@ -1185,7 +1201,7 @@ packages:
     source: hosted
     version: "0.3.9"
   sdp_transform:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sdp_transform
       sha256: "73e412a5279a5c2de74001535208e20fff88f225c9a4571af0f7146202755e45"
@@ -1533,6 +1549,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  video_call:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: c69e427db165584eedcd98a6c216b556a647edd1
+      url: "https://github.com/sbaskoy/video_call"
+    source: git
+    version: "0.0.1"
   vm_service:
     dependency: transitive
     description:

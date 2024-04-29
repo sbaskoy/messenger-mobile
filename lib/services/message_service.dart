@@ -1,5 +1,3 @@
-
-
 import 'package:dio/dio.dart';
 
 import 'package:planner_messenger/dialogs/file_select/file_select_dialog_controller.dart';
@@ -129,6 +127,36 @@ class MessageService {
     var response = await service.dio.delete("/messages/$chatId/favorites/$favoriteItemId");
     if (response.data != null) {
       return ApiInfoModel.fromJson(response.data);
+    }
+    return null;
+  }
+
+  Future<ApiInfoModel?> deleteMessage(String chatId, String messageId) async {
+    var response = await service.dio.delete("/messages/$chatId/delete/$messageId");
+    if (response.data != null) {
+      return ApiInfoModel.fromJson(response.data);
+    }
+    return null;
+  }
+
+  Future<Message?> forwardMessage(String forwardChatId, String messageId) async {
+    var response = await service.dio.delete("/messages/$forwardChatId/forward/$messageId");
+    if (response.data != null) {
+      return Message.fromJson(response.data);
+    }
+    return null;
+  }
+
+  Future<List<Message>?> forwardMessages(String forwardChatId, List<int> messages) async {
+    var response = await service.dio.post(
+      "/messages/$forwardChatId/forward-messages",
+      data: {
+        "messages": messages,
+      },
+    );
+    var jsonResponse = response.data;
+    if (jsonResponse != null && jsonResponse is List) {
+      return jsonResponse.map((e) => Message.fromJson(e)).toList();
     }
     return null;
   }

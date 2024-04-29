@@ -13,7 +13,7 @@ class ArchiveListView extends StatefulWidget {
   State<ArchiveListView> createState() => _ArchiveListViewState();
 }
 
-class _ArchiveListViewState extends State<ArchiveListView> {
+class _ArchiveListViewState extends State<ArchiveListView> with AutomaticKeepAliveClientMixin {
   final _controller = AppControllers.chatList..loadChats(archive: true, refresh: true);
 
   final ScrollController _scrollController = ScrollController();
@@ -35,6 +35,7 @@ class _ArchiveListViewState extends State<ArchiveListView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () => _controller.loadChats(archive: true, refresh: true),
@@ -49,4 +50,7 @@ class _ArchiveListViewState extends State<ArchiveListView> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

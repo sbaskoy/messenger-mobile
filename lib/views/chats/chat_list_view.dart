@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import 'package:planner_messenger/constants/app_controllers.dart';
 
 import 'package:planner_messenger/utils/app_utils.dart';
@@ -14,7 +13,7 @@ class ChatListView extends StatefulWidget {
   State<ChatListView> createState() => _ChatListViewState();
 }
 
-class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver {
+class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   final _controller = AppControllers.chatList..loadChats(refresh: true);
   final ScrollController _scrollController = ScrollController();
 
@@ -46,6 +45,7 @@ class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () => _controller.loadChats(refresh: true),
@@ -57,4 +57,7 @@ class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

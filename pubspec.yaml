@@ -43,28 +43,32 @@ dependencies:
   path_provider: ^2.1.2
   syncfusion_flutter_gauges: ^25.1.37
   filesystem_picker: ^4.1.0
-  flutter_webrtc: ^0.9.48+hotfix.1
+  #flutter_webrtc: ^0.9.48+hotfix.1
   #flutter_webrtc_wrapper: ^1.0.2
-  sdp_transform: ^0.3.2
-  mediasoup_client_flutter: ^0.8.5
+  #sdp_transform: ^0.3.2
+  #mediasoup_client_flutter: ^0.8.5
   #protoo_client: ^0.3.3
   #random_string: ^2.3.1
 
-  flutter_bloc: ^7.0.0
-  equatable: ^2.0.5
-  expandable_bottom_sheet: ^1.1.1+1
+  #flutter_bloc: ^7.0.0
+  #equatable: ^2.0.5
+  #expandable_bottom_sheet: ^1.1.1+1
   firebase_core: ^2.29.0
   firebase_messaging: ^14.8.1
   flutter_local_notifications: ^17.0.1
   super_context_menu: ^0.7.3
   device_info_plus: ^9.1.2
-  scroll_to_index: ^3.0.1
+  #scroll_to_index: ^3.0.1
   readmore: ^2.2.0
   scrollable_positioned_list_extended: ^0.3.9
   flutter_image_compress: ^2.2.0
   flutter_app_badger: ^1.5.0
   flutter_dynamic_icon: ^2.1.0
   shimmer: ^3.0.0
+  video_call:
+    git:
+      url: https://github.com/sbaskoy/video_call
+      ref: main
 
 dev_dependencies:
   flutter_test:
