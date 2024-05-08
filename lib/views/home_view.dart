@@ -112,25 +112,25 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
               position: PopupMenuPosition.under,
               splashRadius: 50,
               itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 1,
-                      enabled: false,
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 15,
-                            backgroundImage: photoUrl != null ? CachedNetworkImageProvider(photoUrl) : null,
-                            child: photoUrl == null ? const Icon(Icons.person) : null,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            AppControllers.auth.user?.fullName ?? "",
-                            style: context.textTheme.bodyLarge,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuDivider(),
+                    // PopupMenuItem(
+                    //   value: 1,
+                    //   enabled: false,
+                    //   child: Row(
+                    //     children: [
+                    //       CircleAvatar(
+                    //         radius: 15,
+                    //         backgroundImage: photoUrl != null ? CachedNetworkImageProvider(photoUrl) : null,
+                    //         child: photoUrl == null ? const Icon(Icons.person) : null,
+                    //       ),
+                    //       const SizedBox(width: 10),
+                    //       Text(
+                    //         AppControllers.auth.user?.fullName ?? "",
+                    //        // style: context.textTheme.bodyLarge,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    //const PopupMenuDivider(),
                     PopupMenuItem(
                       value: 23,
                       onTap: () async {

@@ -41,6 +41,7 @@ class _SearchDialogState extends State<SearchDialog> {
       setState(() {
         _loading = true;
       });
+      print(searchTerm);
       var response = await AppServices.filter.search(searchTerm);
       if (response != null) {
         _searchResponse = response;
