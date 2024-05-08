@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:multi_image_layout/multi_image_layout.dart';
 import 'package:planner_messenger/config/push_notifications.dart';
 import 'package:planner_messenger/dialogs/search/search_dialog.dart';
 
@@ -47,7 +48,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-     // flutterLocalNotificationsPlugin.cancelAll();
+      // flutterLocalNotificationsPlugin.cancelAll();
     }
   }
 
@@ -61,6 +62,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     flutterLocalNotificationsPlugin.cancelAll();
+    var photoUrl = AppControllers.auth.user?.photo;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -108,15 +110,24 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
               enabled: true,
               icon: const Icon(Icons.more_vert_outlined),
               position: PopupMenuPosition.under,
-              splashRadius: 20,
+              splashRadius: 50,
               itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 1,
-                      child: Text(
-                        AppControllers.auth.user?.fullName ?? "",
-                        style: TextStyle(
-                          color: context.theme.primaryColor,
-                        ),
+                      enabled: false,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 15,
+                            backgroundImage: photoUrl != null ? CachedNetworkImageProvider(photoUrl) : null,
+                            child: photoUrl == null ? const Icon(Icons.person) : null,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            AppControllers.auth.user?.fullName ?? "",
+                            style: context.textTheme.bodyLarge,
+                          ),
+                        ],
                       ),
                     ),
                     const PopupMenuDivider(),
@@ -139,7 +150,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                   ]),
         ],
         bottom: TabBar(
-          
           padding: EdgeInsets.zero,
           labelPadding: EdgeInsets.zero,
           tabs: const [
@@ -152,7 +162,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       ),
       body: TabBarView(
         controller: tabController,
-        
         children: const [
           ChatListView(),
           ArchiveListView(),
