@@ -40,12 +40,15 @@ class _ArchiveListViewState extends State<ArchiveListView> with AutomaticKeepAli
       body: RefreshIndicator(
         onRefresh: () => _controller.loadChats(archive: true, refresh: true),
         child: _controller.orderedArchiveChats.builder(
-          AppUtils.sStateBuilder((data) {
-            return ChatListWidget(
-              chats: data,
-              scrollController: _scrollController,
-            );
-          }),
+          AppUtils.sStateBuilder(
+            (data) {
+              return ChatListWidget(
+                chats: data,
+                scrollController: _scrollController,
+              );
+            },
+            emptyMessage: "No archived chats",
+          ),
         ),
       ),
     );

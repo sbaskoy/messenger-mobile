@@ -50,9 +50,12 @@ class _ChatListViewState extends State<ChatListView> with WidgetsBindingObserver
       body: RefreshIndicator(
         onRefresh: () => _controller.loadChats(refresh: true),
         child: _controller.orderedChats.builder(
-          AppUtils.sStateBuilder((data) {
-            return ChatListWidget(chats: data, scrollController: _scrollController);
-          }),
+          AppUtils.sStateBuilder(
+            (data) {
+              return ChatListWidget(chats: data, scrollController: _scrollController);
+            },
+            emptyMessage: "No chats",
+          ),
         ),
       ),
     );

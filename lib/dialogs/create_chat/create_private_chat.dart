@@ -129,31 +129,37 @@ class _CreatePrivateChatWidgetState extends State<CreatePrivateChatWidget> {
                   const Text("Users"),
                   emptySize,
                   Expanded(
-                    child: widget.controller.filteredUsers.builder(AppUtils.sStateBuilder((data) {
-                      return Container(
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).disabledColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(5)),
-                          child: AppUtils.appListView(
-                            //shrinkWrap: true,
-                            physics: const ClampingScrollPhysics(),
-                            items: data,
-                            builder: (context, index, user) {
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    onTap: () => _createPrivateChat(user),
-                                    leading: CircleAvatar(
-                                      backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                    child: widget.controller.filteredUsers.builder(
+                      AppUtils.sStateBuilder(
+                        (data) {
+                          return Container(
+                            decoration: BoxDecoration(
+                                color: Theme.of(context).disabledColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(5)),
+                            child: AppUtils.appListView(
+                              //shrinkWrap: true,
+                              physics: const ClampingScrollPhysics(),
+                              items: data,
+                              builder: (context, index, user) {
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      onTap: () => _createPrivateChat(user),
+                                      leading: CircleAvatar(
+                                        backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                                      ),
+                                      title: Text(user.fullName ?? ""),
                                     ),
-                                    title: Text(user.fullName ?? ""),
-                                  ),
-                                  const Divider(indent: 72, height: 2)
-                                ],
-                              );
-                            },
-                          ));
-                    })),
+                                    const Divider(indent: 72, height: 2)
+                                  ],
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        emptyMessage: "User not found",
+                      ),
+                    ),
                   )
                 ],
               ),

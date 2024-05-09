@@ -62,7 +62,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     flutterLocalNotificationsPlugin.cancelAll();
-    var photoUrl = AppControllers.auth.user?.photo;
+    //var photoUrl = AppControllers.auth.user?.photo;
     return Scaffold(
       appBar: AppBar(
         title: Text(

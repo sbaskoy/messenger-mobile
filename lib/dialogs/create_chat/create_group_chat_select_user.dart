@@ -92,49 +92,52 @@ class _CreateGroupSelectUserState extends State<CreateGroupSelectUser> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: widget.controller.filteredUsers.builder(
-              AppUtils.sStateBuilder((data) {
-                return widget.createGroupChatController.groupMembers.builder(
-                  AppUtils.sStateBuilder((members) {
-                    return Container(
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).disabledColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: AppUtils.appListView(
-                        items: data,
-                        builder: (context, index, user) {
-                          var userSelected = widget.createGroupChatController.isSelected(user);
-                          return Column(
-                            children: [
-                              ListTile(
-                                onTap: () => _selectUser(user),
-                                leading: CircleAvatar(
-                                  backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+              AppUtils.sStateBuilder(
+                (data) {
+                  return widget.createGroupChatController.groupMembers.builder(
+                    AppUtils.sStateBuilder((members) {
+                      return Container(
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).disabledColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(5)),
+                        child: AppUtils.appListView(
+                          items: data,
+                          builder: (context, index, user) {
+                            var userSelected = widget.createGroupChatController.isSelected(user);
+                            return Column(
+                              children: [
+                                ListTile(
+                                  onTap: () => _selectUser(user),
+                                  leading: CircleAvatar(
+                                    backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                                  ),
+                                  trailing: Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Theme.of(context).disabledColor.withOpacity(0.2),
+                                        ),
+                                        color: userSelected ? Theme.of(context).primaryColorDark : null),
+                                    child: userSelected ? const Icon(Icons.done) : null,
+                                  ),
+                                  title: Text(
+                                    user.fullName ?? "",
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                  ),
                                 ),
-                                trailing: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Theme.of(context).disabledColor.withOpacity(0.2),
-                                      ),
-                                      color: userSelected ? Theme.of(context).primaryColorDark : null),
-                                  child: userSelected ? const Icon(Icons.done) : null,
-                                ),
-                                title: Text(
-                                  user.fullName ?? "",
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                              ),
-                              const Divider(indent: 72, height: 2)
-                            ],
-                          );
-                        },
-                      ),
-                    );
-                  }),
-                );
-              }),
+                                const Divider(indent: 72, height: 2)
+                              ],
+                            );
+                          },
+                        ),
+                      );
+                    }),
+                  );
+                },
+                emptyMessage: "User not found",
+              ),
             ),
           ),
         )

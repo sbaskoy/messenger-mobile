@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:multi_image_layout/multi_image_layout.dart';
 import 'package:planner_messenger/constants/app_services.dart';
 import 'package:planner_messenger/extensions/string_extension.dart';
 import 'package:planner_messenger/models/filter/filter_response.dart';
@@ -28,7 +31,7 @@ class _SearchDialogState extends State<SearchDialog> {
   void initState() {
     super.initState();
     _searchTermController.addListener(() {
-      _search();
+      Timer(const Duration(seconds: 1), _search);
     });
   }
 
@@ -41,19 +44,23 @@ class _SearchDialogState extends State<SearchDialog> {
       setState(() {
         _loading = true;
       });
-      print(searchTerm);
+      // print(searchTerm);
       var response = await AppServices.filter.search(searchTerm);
       if (response != null) {
         _searchResponse = response;
         _lastSearchTerm = searchTerm;
+        setState(() {
+          _loading = false;
+        });
       }
     } catch (ex) {
+      if (ex is DioException && ex.type != DioExceptionType.cancel) {
+        setState(() {
+          _loading = false;
+        });
+      }
       //AppUtils.showErrorSnackBar(ex);
-    } finally {
-      setState(() {
-        _loading = false;
-      });
-    }
+    } finally {}
   }
 
   @override
@@ -105,7 +112,9 @@ class _SearchDialogState extends State<SearchDialog> {
     var chats = _searchResponse?.chats ?? [];
     var messages = _searchResponse?.messages ?? [];
     if (chats.isEmpty && messages.isEmpty) {
-      return const SizedBox();
+      return const SizedBox(
+        child: Text("No result"),
+      );
     }
     return SingleChildScrollView(
       child: Column(

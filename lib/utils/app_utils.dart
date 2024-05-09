@@ -129,12 +129,20 @@ class AppUtils {
   // static Widget sStateBuilder<T>( bool loading, List<T> item, dynamic error, BuildContext context){
   //   return
   // }
-  static Widget Function(bool, T?, dynamic, BuildContext) sStateBuilder<T>(Widget Function(T data) builder) {
+  static Widget Function(bool, T?, dynamic, BuildContext) sStateBuilder<T>(
+    Widget Function(T data) builder, {
+    String? emptyMessage,
+  }) {
     return (bool loading, T? data, dynamic error, BuildContext context) {
       if (error != null) {
         return CenteredErrorText(error.toString());
       }
       if (data != null) {
+        if (data is List && data.isEmpty && emptyMessage != null) {
+          return Center(
+            child: Text(emptyMessage),
+          );
+        }
         return builder(data);
       }
       return const CenteredProgressIndicator();
