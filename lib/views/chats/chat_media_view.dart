@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:multi_image_layout/multi_image_layout.dart';
@@ -105,7 +107,7 @@ class _ChatMediaViewState extends State<ChatMediaView> {
                 left: 0,
                 child: IconButton(
                   onPressed: Get.back,
-                  icon: const Icon(Icons.arrow_back),
+                  icon: Platform.isIOS ? const Icon(Icons.arrow_back_ios) : const Icon(Icons.arrow_back),
                 ))
           ],
         ),
@@ -119,6 +121,9 @@ class _ChatMediaViewState extends State<ChatMediaView> {
   }
 
   Widget _buildDocumentView() {
+    if (documents.isEmpty) {
+      return const Center(child: Text("No document have been shared in this chat yet."));
+    }
     return Column(
       children: [
         Padding(
@@ -174,6 +179,9 @@ class _ChatMediaViewState extends State<ChatMediaView> {
   }
 
   Widget _buildImageGrid() {
+    if (images.isEmpty) {
+      return const Center(child: Text("No image have been shared in this chat yet."));
+    }
     return ListView.builder(
       reverse: true,
       itemCount: images.length,

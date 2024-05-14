@@ -51,34 +51,44 @@ class AppUtils {
     required Widget Function(BuildContext c, ScrollController scrollController, double) builder,
     double? initHeight,
   }) {
-    return Get.bottomSheet(
-      SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(color: Colors.transparent),
-          child: Column(
-            children: [
-              Container(
-                height: 5,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Expanded(
-                child: Container(
-                  decoration: AppConstants.popupDecoration(context),
-                  child: builder(context, ScrollController(), 1),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
+    return showModalBottomSheet(
+      showDragHandle: true,
+      useSafeArea: false,
+      useRootNavigator: true,
+      context: context,
       isScrollControlled: (initHeight ?? 0) > 0.5 ? true : false,
-      ignoreSafeArea: false,
+      builder: (context) {
+        return builder(context, ScrollController(), 1);
+      },
     );
+    // return Get.bottomSheet(
+    //   SafeArea(
+    //     child: Container(
+    //       decoration: const BoxDecoration(color: Colors.transparent),
+    //       child: Column(
+    //         children: [
+    //           Container(
+    //             height: 5,
+    //             width: 50,
+    //             decoration: BoxDecoration(
+    //               color: Colors.grey.shade100,
+    //               borderRadius: BorderRadius.circular(5),
+    //             ),
+    //           ),
+    //           const SizedBox(height: 5),
+    //           Expanded(
+    //             child: Container(
+    //               decoration: AppConstants.popupDecoration(context),
+    //               child: builder(context, ScrollController(), 1),
+    //             ),
+    //           )
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    //   isScrollControlled: (initHeight ?? 0) > 0.5 ? true : false,
+    //   ignoreSafeArea: false,
+    // );
   }
 
   static Future<bool> buildYesOrNoAlert(BuildContext context, String message) async {

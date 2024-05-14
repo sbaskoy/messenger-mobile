@@ -141,6 +141,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         }
                       },
                       child: Text(
+                        
                         "Logout",
                         style: TextStyle(
                           color: context.theme.colorScheme.error,

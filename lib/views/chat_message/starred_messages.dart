@@ -150,6 +150,7 @@ class _StarredMessageViewState extends State<StarredMessagesView> {
                     );
                   },
                 ),
+                emptyMessage: "you have no starred message",
               ),
             ),
           ),

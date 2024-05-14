@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_services.dart';
 import 'package:planner_messenger/models/chats/chat.dart';
+import 'package:planner_messenger/models/chats/chat_detail.dart';
 import 'package:planner_messenger/models/chats/chat_user.dart';
 import 'package:planner_messenger/utils/app_utils.dart';
 import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.dart';
@@ -11,11 +12,11 @@ import '../views/chat_message/message_view.dart';
 
 class ChatUserInfoDialog extends StatefulWidget {
   final ChatUser chatUser;
-  final Chat chat;
+  final ChatDetail chatDetail;
   final void Function(ChatUser chatUser)? onRemovedUser;
   final void Function(ChatUser chatUser)? onUpdateUser;
   const ChatUserInfoDialog(
-      {super.key, required this.chatUser, required this.chat, this.onRemovedUser, this.onUpdateUser});
+      {super.key, required this.chatUser, required this.chatDetail, this.onRemovedUser, this.onUpdateUser});
 
   @override
   State<ChatUserInfoDialog> createState() => _ChatUserInfoDialogState();
@@ -24,11 +25,12 @@ class ChatUserInfoDialog extends StatefulWidget {
 class _ChatUserInfoDialogState extends State<ChatUserInfoDialog> {
   late final chatUser = widget.chatUser;
   late final user = chatUser.user;
-
+  late final chat = widget.chatDetail.chat;
+  late final currentChatUser = widget.chatDetail.chatUser;
   void _removeUserFromChat() async {
     try {
       AppProgressController.show();
-      var response = await AppServices.chat.leaveChat(widget.chat.id.toString(), userId: user?.id);
+      var response = await AppServices.chat.leaveChat(chat.id.toString(), userId: user?.id);
       if (response != null) {
         widget.onRemovedUser?.call(chatUser);
         Get.back();
@@ -45,7 +47,7 @@ class _ChatUserInfoDialogState extends State<ChatUserInfoDialog> {
       if (user == null) return;
       AppProgressController.show();
       var response = await AppServices.chat.updateChatUserRole(
-        chatId: widget.chat.id.toString(),
+        chatId: chat.id.toString(),
         userId: user!.id!,
         role: role,
       );
@@ -97,30 +99,32 @@ class _ChatUserInfoDialogState extends State<ChatUserInfoDialog> {
         ListTile(
           onTap: _createChat,
           leading: const Icon(Icons.chat),
-          title: const Text("Chat"),
+          title: const Text("Start Chat"),
         ),
-        chatUser.role != UserChatRole.admin
-            ? ListTile(
-                onTap: () => _updateUserRolToChat(UserChatRole.admin),
-                leading: const Icon(Icons.person_3),
-                title: const Text("Make Group Admin"),
-              )
-            : ListTile(
-                onTap: () => _updateUserRolToChat(UserChatRole.user),
-                leading: const Icon(Icons.person_3),
-                title: const Text("Remove Admin Permission"),
-              ),
+        if (currentChatUser?.role == UserChatRole.admin)
+          chatUser.role != UserChatRole.admin
+              ? ListTile(
+                  onTap: () => _updateUserRolToChat(UserChatRole.admin),
+                  leading: const Icon(Icons.person_3),
+                  title: const Text("Make Group Admin"),
+                )
+              : ListTile(
+                  onTap: () => _updateUserRolToChat(UserChatRole.user),
+                  leading: const Icon(Icons.person_3),
+                  title: const Text("Remove Admin Permission"),
+                ),
         const Divider(),
-        ListTile(
-          onTap: _removeUserFromChat,
-          leading: Icon(Icons.remove_circle_sharp, color: context.theme.colorScheme.error),
-          title: Text(
-            "Remove From Group",
-            style: TextStyle(
-              color: context.theme.colorScheme.error,
+        if (currentChatUser?.role == UserChatRole.admin)
+          ListTile(
+            onTap: _removeUserFromChat,
+            leading: Icon(Icons.remove_circle_sharp, color: context.theme.colorScheme.error),
+            title: Text(
+              "Remove From Group",
+              style: TextStyle(
+                color: context.theme.colorScheme.error,
+              ),
             ),
           ),
-        ),
       ],
     );
   }

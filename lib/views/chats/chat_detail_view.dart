@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import 'package:multi_image_layout/multi_image_layout.dart';
 import 'package:planner_messenger/constants/app_services.dart';
@@ -231,37 +230,40 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           var user = users[index].user;
                           var userPhotoUrl = users[index].user?.photo;
                           return Card(
-                            child: ListTile(
-                              onTap: () {
-                                AppUtils.showFlexibleDialog(
-                                  context: context,
-                                  builder: (c, scrollController, p2) {
-                                    return ChatUserInfoDialog(
-                                      chatUser: users[index],
-                                      chat: chatDetail.chat,
-                                      onRemovedUser: (chatUser) {
-                                        var chatUsers = chatDetail.chat.users ?? [];
-                                        chatUsers.removeWhere((element) => element.id == chatUser.id);
-                                        chatDetail.chat.users = chatUsers;
-                                        widget.chatDetailStream.setState(chatDetail);
-                                        widget.onUpdated?.call(chatDetail.chat);
-                                      },
-                                      onUpdateUser: (chatUser) {
-                                        var chatUsers = chatDetail.chat.users ?? [];
-                                        var index = chatUsers.indexWhere((element) => element.id == chatUser.id);
-                                        chatDetail.chat.users![index] = chatUser;
-                                        widget.chatDetailStream.setState(chatDetail);
-                                        widget.onUpdated?.call(chatDetail.chat);
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                              leading: CircleAvatar(
-                                backgroundImage: userPhotoUrl != null ? NetworkImage(userPhotoUrl) : null,
-                                child: userPhotoUrl == null ? const Icon(Icons.person) : null,
+                            child: IgnorePointer(
+                              ignoring: chatDetail.chat.chatType == ChatType.private,
+                              child: ListTile(
+                                onTap: () {
+                                  AppUtils.showFlexibleDialog(
+                                    context: context,
+                                    builder: (c, scrollController, p2) {
+                                      return ChatUserInfoDialog(
+                                        chatUser: users[index],
+                                        chatDetail: chatDetail,
+                                        onRemovedUser: (chatUser) {
+                                          var chatUsers = chatDetail.chat.users ?? [];
+                                          chatUsers.removeWhere((element) => element.id == chatUser.id);
+                                          chatDetail.chat.users = chatUsers;
+                                          widget.chatDetailStream.setState(chatDetail);
+                                          widget.onUpdated?.call(chatDetail.chat);
+                                        },
+                                        onUpdateUser: (chatUser) {
+                                          var chatUsers = chatDetail.chat.users ?? [];
+                                          var index = chatUsers.indexWhere((element) => element.id == chatUser.id);
+                                          chatDetail.chat.users![index] = chatUser;
+                                          widget.chatDetailStream.setState(chatDetail);
+                                          widget.onUpdated?.call(chatDetail.chat);
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                leading: CircleAvatar(
+                                  backgroundImage: userPhotoUrl != null ? NetworkImage(userPhotoUrl) : null,
+                                  child: userPhotoUrl == null ? const Icon(Icons.person) : null,
+                                ),
+                                title: Text(user?.fullName ?? ""),
                               ),
-                              title: Text(user?.fullName ?? ""),
                             ),
                           );
                         })

@@ -178,43 +178,49 @@ class _AddMemberToChatDialogState extends State<AddMemberToChatDialog> {
                   emptySize,
                   const Text("Users"),
                   emptySize,
-                  widget.controller.filteredUsers.builder(AppUtils.sStateBuilder((data) {
-                    return Container(
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).disabledColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(5)),
-                        child: AppUtils.appListView(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          items: data,
-                          builder: (context, index, user) {
-                            var isUserSelected = _selectedUsers.any((i) => i.id == user.id);
-                            return Column(
-                              children: [
-                                ListTile(
-                                  onTap: () => _selectUser(user),
-                                  leading: CircleAvatar(
-                                    backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                  widget.controller.filteredUsers.builder(
+                    AppUtils.sStateBuilder(
+                      (data) {
+                        return Container(
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).disabledColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(5)),
+                          child: AppUtils.appListView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            items: data,
+                            builder: (context, index, user) {
+                              var isUserSelected = _selectedUsers.any((i) => i.id == user.id);
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    onTap: () => _selectUser(user),
+                                    leading: CircleAvatar(
+                                      backgroundImage: user.photo == null ? null : NetworkImage(user.photo!),
+                                    ),
+                                    trailing: Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Theme.of(context).disabledColor.withOpacity(0.2),
+                                          ),
+                                          color: isUserSelected ? Theme.of(context).primaryColorDark : null),
+                                      child: isUserSelected ? const Icon(Icons.done) : null,
+                                    ),
+                                    title: Text(user.fullName ?? ""),
                                   ),
-                                  trailing: Container(
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Theme.of(context).disabledColor.withOpacity(0.2),
-                                        ),
-                                        color: isUserSelected ? Theme.of(context).primaryColorDark : null),
-                                    child: isUserSelected ? const Icon(Icons.done) : null,
-                                  ),
-                                  title: Text(user.fullName ?? ""),
-                                ),
-                                const Divider(indent: 72, height: 2)
-                              ],
-                            );
-                          },
-                        ));
-                  }))
+                                  const Divider(indent: 72, height: 2)
+                                ],
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      emptyMessage: "No user found",
+                    ),
+                  )
                 ],
               ),
             ),
