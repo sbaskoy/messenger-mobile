@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_theme.dart';
-import '../constants/app_constants.dart';
 import '../constants/app_controllers.dart';
 import '../widgets/progress_indicator/centered_progress_indicator.dart';
 import '../widgets/snackbar/custom_snackbar.dart';
