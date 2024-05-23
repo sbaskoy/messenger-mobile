@@ -23,7 +23,7 @@ class Chat {
   int? memberUserId;
   String? pinnedMessageId;
   int? isDeleted;
-  int? isArchived;
+  //int? isArchived;
   List<Message>? messages;
   User? creatorUser;
   String? chatType;
@@ -32,7 +32,7 @@ class Chat {
   FileModel? photo;
   Message? pinnedMessage;
   List<ChatUser>? users;
-
+  List<dynamic>? archived;
   Chat({
     this.id,
     this.createdAt,
@@ -42,7 +42,7 @@ class Chat {
     this.creatorUserId,
     this.pinnedMessageId,
     this.isDeleted,
-    this.isArchived,
+    // this.isArchived,
     this.messages,
     this.unSeenCount = 0,
     this.pinnedMessage,
@@ -52,6 +52,7 @@ class Chat {
     this.creatorUser,
     this.memberUser,
     this.photo,
+    this.archived,
   });
 
   Chat.fromJson(Map json) {
@@ -64,7 +65,7 @@ class Chat {
     memberUserId = json['member_user_id'];
     pinnedMessageId = json['pinned_message_id'].toString();
     isDeleted = json['is_deleted'];
-    isArchived = json['is_archived'];
+    archived = json['archived'] is List ? json['archived'] : null;
     var jsonMessages = json["messages"];
     if (jsonMessages is List) {
       messages = jsonMessages.map((e) => Message.fromJson(e)).toList();
@@ -131,7 +132,7 @@ class Chat {
       createdAt: chat?.createdAt ?? createdAt,
       name: chat?.name ?? name,
       creatorUserId: chat?.creatorUserId ?? creatorUserId,
-      isArchived: chat?.isArchived ?? isArchived,
+      archived: chat?.archived ?? archived,
       isDeleted: chat?.isDeleted ?? isDeleted,
       memberUserId: chat?.memberUserId ?? memberUserId,
       messages: (chat?.messages?.isNotEmpty ?? false) ? chat?.messages : messages,
@@ -157,4 +158,6 @@ class Chat {
     if (chatUser == null) return false;
     return chatUser.disableNotifications != 1;
   }
+
+  bool get isArchived => archived?.isNotEmpty ?? false;
 }

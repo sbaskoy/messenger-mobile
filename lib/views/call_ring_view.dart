@@ -75,12 +75,10 @@ class _CallRingViewState extends State<CallRingView> {
                                 CustomIconButton(
                                   icon: Icons.call,
                                   onPressed: () {
-                                    if (incomingCallData == null) return;
+                                    if (incomingCallData == null || AppControllers.auth.user == null) return;
                                     Get.to(
                                       () => GroupCallScreen(
                                         chatId: incomingCallData!.chat.id!,
-                                        displayName: AppControllers.auth.user?.fullName ?? "",
-                                        userId: AppControllers.auth.user?.id?.toString() ?? "",
                                         isOwner: false,
                                       ),
                                     );

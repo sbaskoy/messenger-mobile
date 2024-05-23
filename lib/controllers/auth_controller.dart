@@ -1,7 +1,7 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:planner_messenger/views/chat_message/message_view.dart';
 import 'package:s_state/s_state.dart';
 
 import '../config/push_notifications.dart';
@@ -22,7 +22,7 @@ class AuthController {
   String? phpToken() => authUser.valueOrNull?.phpToken;
   User? get user => authUser.valueOrNull?.user;
 
-  void login(String email, String password, {int? chatId}) async {
+  void login(String email, String password, {Widget Function()? nextPageBuilder}) async {
     try {
       AppProgressController.show();
       var firebaseToken = await getFirebaseToken();
@@ -37,10 +37,10 @@ class AuthController {
           AppManagers.local.setString(LocalManagerKey.accessToken, response.accessToken ?? "");
         }
         AppManagers.socket.initSocket(accessToken());
-        if (chatId == null) {
+        if (nextPageBuilder == null) {
           Get.offAll(() => const HomeView());
         } else {
-          Get.offAll(() => MessageView(chatId: chatId));
+          Get.offAll(() => nextPageBuilder());
         }
       }
     } catch (ex) {

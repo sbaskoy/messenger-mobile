@@ -11,8 +11,8 @@ import '../constants/app_images.dart';
 import '../widgets/forms/text_fields.dart';
 
 class LoginView extends StatefulWidget {
-  final int? chatId;
-  const LoginView({super.key, this.chatId});
+  final Widget Function()? nextPageBuilder;
+  const LoginView({super.key, this.nextPageBuilder});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -39,7 +39,11 @@ class _LoginViewState extends State<LoginView> {
 
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      AppControllers.auth.login(_emailController.text, _passwordController.text);
+      AppControllers.auth.login(
+        _emailController.text,
+        _passwordController.text,
+        nextPageBuilder: widget.nextPageBuilder,
+      );
     }
   }
 

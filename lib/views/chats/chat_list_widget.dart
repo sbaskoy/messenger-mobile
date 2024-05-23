@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:get/get.dart';
 import 'package:multi_image_layout/multi_image_layout.dart';
@@ -32,6 +33,14 @@ class ChatListWidget extends StatelessWidget {
     return false;
   }
 
+  Future<bool> delete(BuildContext context, Chat item) async {
+    var res = await AppUtils.buildYesOrNoAlert(context, "Bu sohbeti silmek istediğinizden emin misiniz?");
+    if (res) {
+      return await AppControllers.chatList.delete(item);
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -42,28 +51,30 @@ class ChatListWidget extends StatelessWidget {
         builder: (context, index, item) {
           // var isPrivate = item.chatType == ChatType.private;
 
-          return Dismissible(
+          return Slidable(
               key: UniqueKey(),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                //  color: context.theme.colorScheme.errorContainer,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: CircleAvatar(
-                  backgroundColor: context.theme.disabledColor.withOpacity(0.2),
-                  child: Icon(
-                    Icons.archive,
-                    color: context.theme.primaryColor,
-                  ),
+              endActionPane: ActionPane(motion: const ScrollMotion(), children: [
+                SlidableAction(
+                  onPressed: (c) {
+                    delete(context, item);
+                  },
+                  backgroundColor: const Color(0xFFFE4A49),
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete,
                 ),
-              ),
-              onDismissed: (direction) {},
-              confirmDismiss: (direction) async {
-                if (item.isArchived == 1) {
-                  return await unArchive(context, item);
-                }
-                return await archive(context, item);
-              },
+                SlidableAction(
+                  onPressed: (c) async {
+                    if (item.isArchived) {
+                      unArchive(context, item);
+                      return;
+                    }
+                    archive(context, item);
+                  },
+                  backgroundColor: context.theme.disabledColor.withOpacity(0.2),
+                  foregroundColor: Colors.white,
+                  icon: Icons.archive,
+                ),
+              ]),
               child: ChatItem(item: item));
         },
       ),

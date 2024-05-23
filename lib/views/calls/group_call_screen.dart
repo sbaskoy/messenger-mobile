@@ -3,16 +3,14 @@ import 'package:planner_messenger/constants/app_constants.dart';
 import 'package:planner_messenger/constants/app_services.dart';
 import 'package:video_call/main.dart';
 
+import '../../constants/app_controllers.dart';
+
 class GroupCallScreen extends StatefulWidget {
   final int chatId;
-  final String userId;
-  final String displayName;
   final bool isOwner;
   const GroupCallScreen({
     super.key,
     required this.chatId,
-    required this.userId,
-    required this.displayName,
     required this.isOwner,
   });
 
@@ -41,8 +39,8 @@ class _GroupCallScreenState extends State<GroupCallScreen> {
   Widget build(BuildContext context) {
     return VideoCallRoom(
       roomId: "${widget.chatId}_chat_call",
-      userId: widget.userId,
-      displayName: widget.displayName,
+      userId: AppControllers.auth.user!.id!.toString(),
+      displayName: AppControllers.auth.user!.fullName!,
       serverUrl: AppConstants.callApiUrl,
     );
   }

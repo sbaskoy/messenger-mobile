@@ -359,8 +359,6 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
         Get.to(
           () => GroupCallScreen(
             chatId: data.chat.id!,
-            userId: user.id.toString(),
-            displayName: user.fullName ?? "",
             isOwner: data.hasActiveCall == false,
           ),
         );
@@ -507,7 +505,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
               _controller.replyMessage.setState(message);
             },
             onAddFavorite: _controller.addFavorites,
-            onInfo: (m) => Get.to(MessageInfoView(message: m)),
+            onInfo: (m) => Get.to(() => MessageInfoView(message: m)),
             onForward: (message) async {
               await Future.delayed(Durations.medium2);
               message.isSelected.setState(true);

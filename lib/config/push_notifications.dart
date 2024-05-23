@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -10,19 +11,66 @@ import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:planner_messenger/constants/app_controllers.dart';
+import 'package:planner_messenger/views/calls/group_call_screen.dart';
 import 'package:planner_messenger/views/chat_message/message_view.dart';
 import 'package:planner_messenger/views/login_view.dart';
+
+Timer? _callNotificationTimer;
 
 const AndroidNotificationChannel andChannel =
     AndroidNotificationChannel("id", 'high_importance_channel', description: "Notification");
 // ignore: unnecessary_new
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
+Future<void> _showCallNotification(RemoteMessage message) async {
+  var notificationId = int.tryParse(message.data["chat_id"]);
+  var notification = message.notification;
+  if (notificationId == null || notification == null) return;
+  int currentSecond = 5;
+
+  _callNotificationTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    currentSecond++;
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      "call",
+      "call",
+      channelDescription: andChannel.description,
+      importance: Importance.max,
+      playSound: true,
+      color: const Color(0xffC47AFF),
+      showProgress: true,
+      priority: Priority.high,
+      ticker: 'Planner Messenger',
+    );
+
+    var iOSChannelSpecifics = const DarwinNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSChannelSpecifics,
+    );
+    await _setForegroundNotificationSetting(true);
+    await flutterLocalNotificationsPlugin.show(
+      notificationId,
+      notification.title,
+      "${notification.body}timer içerisinden",
+      platformChannelSpecifics,
+      payload: jsonEncode(message.data),
+    );
+    if (currentSecond >= 5) {
+      timer.cancel();
+      flutterLocalNotificationsPlugin.cancel(notificationId);
+      await _setForegroundNotificationSetting(false);
+    }
+  });
+}
+
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   await createNotificationChannel();
-  increaseApplicationBadgeCount();
-  //FlutterAppBadger.updateBadgeCount(5);
+  if (message.data["notification_type"] == "NEW_CALL") {
+    _showCallNotification(message);
+  } else {
+    increaseApplicationBadgeCount();
+  }
 }
 
 Future _onSelectBackgroundNotification(NotificationResponse payload) async {
@@ -32,8 +80,25 @@ Future _onSelectBackgroundNotification(NotificationResponse payload) async {
     if (payload.payload == null) return;
     var messageData = jsonDecode(payload.payload!);
     var chatId = int.tryParse(messageData["chat_id"]?.toString() ?? "");
-    if (chatId != null) {
-      Get.offAll(() => LoginView(chatId: chatId));
+
+    if (chatId == null) {
+      return;
+    }
+    if (messageData["notification_type" == "NEW_CALL"]) {
+      _callNotificationTimer?.cancel();
+      flutterLocalNotificationsPlugin.cancel(chatId);
+      Get.offAll(
+        () => LoginView(
+          nextPageBuilder: () {
+            return GroupCallScreen(
+              chatId: chatId,
+              isOwner: false,
+            );
+          },
+        ),
+      );
+    } else if (messageData["notification_type" == "NEW_MESSAGE"]) {
+      Get.offAll(() => LoginView(nextPageBuilder: () => MessageView(chatId: chatId)));
     }
   } catch (_) {}
 }
@@ -123,7 +188,7 @@ Future<void> _initNotifications() async {
       await flutterLocalNotificationsPlugin.show(
         messageId,
         notification.title,
-        notification.body,
+        "${notification.body}on message listen",
         platformChannelSpecifics,
         payload: jsonEncode(message.data),
       );

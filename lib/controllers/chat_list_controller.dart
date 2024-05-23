@@ -140,7 +140,7 @@ class ChatListController {
       }
       var activeChats = chats.valueOrNull;
       var archived = archivedChats.valueOrNull ?? [];
-      chat.isArchived = 1;
+      chat.archived = [1];
       activeChats?.removeWhere((element) => element.id == chat.id);
       archived.insert(0, chat);
       if (activeChats != null) {
@@ -162,7 +162,7 @@ class ChatListController {
       }
       var activeChats = chats.valueOrNull ?? [];
       var archived = archivedChats.valueOrNull ?? [];
-      chat.isArchived = 0;
+      chat.archived = [];
       activeChats.insert(0, chat);
 
       archived.removeWhere((e) => e.id == chat.id);
@@ -170,6 +170,29 @@ class ChatListController {
       chats.setState(activeChats);
 
       archivedChats.setState(archived);
+      return true;
+    } catch (ex) {
+      AppUtils.showErrorSnackBar(ex);
+      return false;
+    }
+  }
+
+  Future<bool> delete(Chat chat) async {
+    try {
+      var response = await AppServices.chat.deleteChat(chat.id.toString());
+      if (response == null) {
+        return false;
+      }
+      if (chat.isArchived) {
+        var chats = archivedChats.valueOrNull ?? [];
+        chats.removeWhere((element) => element.id == chat.id);
+        archivedChats.setState(chats);
+      } else {
+        var activeChats = chats.valueOrNull ?? [];
+        activeChats.removeWhere((element) => element.id == chat.id);
+        chats.setState(activeChats);
+      }
+
       return true;
     } catch (ex) {
       AppUtils.showErrorSnackBar(ex);
