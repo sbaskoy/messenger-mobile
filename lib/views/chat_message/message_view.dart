@@ -380,6 +380,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
       },
       child: Text(
         chat?.getChatName() ?? "",
+        overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: Colors.white,
               fontSize: 20,

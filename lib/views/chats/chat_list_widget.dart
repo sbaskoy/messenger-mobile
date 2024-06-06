@@ -104,6 +104,9 @@ class ChatItem extends StatelessWidget {
           ),
           title: Text(
             item.getChatName(),
+            maxLines: 2,
+            textAlign: TextAlign.start,
+            overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           subtitle: _buildSubTitle(context, item),

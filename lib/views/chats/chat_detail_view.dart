@@ -135,6 +135,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                   Text(
                     chatDetail.chat.getChatName(),
                     style: context.textTheme.titleLarge,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
                   emptySize,
                   Card(
@@ -227,6 +230,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                             ),
                           ),
                         ...List.generate(users.length, (index) {
+                          var chatUser = users[index];
                           var user = users[index].user;
                           var userPhotoUrl = users[index].user?.photo;
                           return Card(
@@ -262,6 +266,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                                   backgroundImage: userPhotoUrl != null ? NetworkImage(userPhotoUrl) : null,
                                   child: userPhotoUrl == null ? const Icon(Icons.person) : null,
                                 ),
+                                trailing:
+                                    chatUser.role == UserChatRole.admin ? Text(users[index].role.toString()) : null,
                                 title: Text(user?.fullName ?? ""),
                               ),
                             ),

@@ -60,6 +60,7 @@ class FileModel {
   }
 
   String? getUrl() => AppUtils.getImageUrl(fileLink);
+
   bool isImage() => AppUtils.isImage(fileExtension ?? "");
   String getFileSizeToMb() {
     const suffixes = ["b", "kb", "mb", "gb", "tb"];
