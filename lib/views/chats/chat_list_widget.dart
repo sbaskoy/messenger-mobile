@@ -123,9 +123,10 @@ class ChatItem extends StatelessWidget {
   }
 
   Widget _buildSubTitle(BuildContext context, Chat chat) {
-    var messages = chat.messages ?? [];
-    if (messages.isEmpty) return const SizedBox();
-    var message = messages.first;
+    var message = chat.lastMessage;
+    if (message == null) {
+      return const SizedBox();
+    }
     var startText = "";
     if (chat.chatType == ChatType.group) {
       startText = message.user?.fullName ?? "";
@@ -148,9 +149,10 @@ class ChatItem extends StatelessWidget {
   }
 
   Widget _buildTrailing(BuildContext context, Chat chat) {
-    var messages = chat.messages ?? [];
-    if (messages.isEmpty) return const SizedBox();
-    var message = messages.first;
+    var message = chat.lastMessage;
+    if (message == null) {
+      return const SizedBox();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [

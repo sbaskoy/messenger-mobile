@@ -9,7 +9,7 @@ class AppConstants {
   AppConstants._();
   static String get baseUrl => "http://ganimuhendislik.com:1885";
   static String get callApiUrl => _url;
-  // static String get baseUrl => "http://192.168.2.20:1881";
+  //static String get baseUrl => "http://192.168.2.38:1885";
   static String get baseApiUrl => baseUrl;
   static String get tagGroupId => "1";
   static Color get progressGreenColor => HexColor("#4ADE80").withOpacity(0.8); // green-400

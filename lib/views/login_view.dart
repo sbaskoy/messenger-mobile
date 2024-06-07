@@ -28,7 +28,6 @@ class _LoginViewState extends State<LoginView> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await AppManagers.local.load();
       var username = AppManagers.local.getString(LocalManagerKey.username);
       var password = AppManagers.local.getString(LocalManagerKey.password);
       _emailController.text = username;

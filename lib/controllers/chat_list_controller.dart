@@ -9,8 +9,8 @@ import 'package:planner_messenger/widgets/progress_indicator/progress_indicator.
 import 'package:s_state/s_state.dart';
 
 int _sortChat(Chat a, Chat b) {
-  var aDateString = a.messages?.isEmpty ?? true ? a.createdAt : a.messages!.first.createdAt;
-  var bDateString = b.messages?.isEmpty ?? true ? b.createdAt : b.messages!.first.createdAt;
+  var aDateString = a.lastMessage == null ? a.createdAt : a.lastMessage!.createdAt;
+  var bDateString = b.lastMessage == null ? b.createdAt : b.lastMessage!.createdAt;
   return bDateString.tryParseDateTime()!.compareTo(aDateString.tryParseDateTime()!);
 }
 
@@ -90,12 +90,7 @@ class ChatListController {
     var allChats = [...activeChats, ...archived];
     var chat = allChats.firstWhereOrNull((element) => element.id == message.chatId);
     if (chat == null) return;
-    chat.messages ??= [];
-    if (chat.messages?.isEmpty ?? false) {
-      chat.messages!.add(message);
-    } else {
-      chat.messages![0] = message;
-    }
+    chat.lastMessage = message;
     if (message.chatId != activeChatId) {
       chat.unSeenCount += 1;
     }
