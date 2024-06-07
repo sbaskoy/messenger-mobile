@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class AuthController {
   final authUser = SState<AuthUser>();
 
   String? accessToken() => authUser.valueOrNull?.accessToken;
+  String? refreshToken() => authUser.valueOrNull?.refreshToken;
   String? phpToken() => authUser.valueOrNull?.phpToken;
   User? get user => authUser.valueOrNull?.user;
 
@@ -33,10 +35,11 @@ class AuthController {
         AppManagers.local.setString(LocalManagerKey.username, email);
         AppManagers.local.setString(LocalManagerKey.password, password);
         AppManagers.local.setBool(LocalManagerKey.isLogged, true);
+        saveToPreferences();
         if (response.accessToken != null) {
           AppManagers.local.setString(LocalManagerKey.accessToken, response.accessToken ?? "");
         }
-        AppManagers.socket.initSocket(accessToken());
+
         if (nextPageBuilder == null) {
           Get.offAll(() => const HomeView());
         } else {
@@ -56,8 +59,39 @@ class AuthController {
     }
   }
 
+  void setAccessToken(String token) {
+    var user = authUser.valueOrNull;
+    if (user != null) {
+      user.accessToken = token;
+      authUser.setState(user);
+    }
+  }
+
+  void setRefreshToken(String token) {
+    var user = authUser.valueOrNull;
+    if (user != null) {
+      user.refreshToken = token;
+      authUser.setState(user);
+    }
+  }
+
+  void saveToPreferences() {
+    var user = authUser.valueOrNull;
+    if (user == null) return;
+    AppManagers.local.setString(LocalManagerKey.user, jsonEncode(user.toJson()));
+  }
+
+  void loadFromPreferences() {
+    var str = AppManagers.local.getString(LocalManagerKey.user);
+    if (str.isNotEmpty) {
+      var userStr = jsonDecode(str);
+      authUser.setState(AuthUser.fromJson(userStr));
+    }
+  }
+
   Future<void> logout() async {
     await AppServices.auth.logout();
+    AppManagers.local.setString(LocalManagerKey.user, "");
     AppManagers.local.setBool(LocalManagerKey.isLogged, false);
     AppManagers.socket.client?.disconnect();
     SGlobalState.dispose();

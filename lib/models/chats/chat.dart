@@ -24,7 +24,8 @@ class Chat {
   String? pinnedMessageId;
   int? isDeleted;
   //int? isArchived;
-  List<Message>? messages;
+  //List<Message>? messages;
+  Message? lastMessage;
   User? creatorUser;
   String? chatType;
   late int unSeenCount;
@@ -43,7 +44,7 @@ class Chat {
     this.pinnedMessageId,
     this.isDeleted,
     // this.isArchived,
-    this.messages,
+    this.lastMessage,
     this.unSeenCount = 0,
     this.pinnedMessage,
     this.users,
@@ -66,9 +67,9 @@ class Chat {
     pinnedMessageId = json['pinned_message_id'].toString();
     isDeleted = json['is_deleted'];
     archived = json['archived'] is List ? json['archived'] : null;
-    var jsonMessages = json["messages"];
-    if (jsonMessages is List) {
-      messages = jsonMessages.map((e) => Message.fromJson(e)).toList();
+    var jsonLastMessage = json["last_message"];
+    if (jsonLastMessage is Map) {
+      lastMessage = Message.fromJson(jsonLastMessage);
     }
     var jsonUsers = json["users"];
     if (jsonUsers is List) {
@@ -135,7 +136,7 @@ class Chat {
       archived: chat?.archived ?? archived,
       isDeleted: chat?.isDeleted ?? isDeleted,
       memberUserId: chat?.memberUserId ?? memberUserId,
-      messages: (chat?.messages?.isNotEmpty ?? false) ? chat?.messages : messages,
+      lastMessage: chat?.lastMessage ?? lastMessage,
       pinnedMessage: chat?.pinnedMessage ?? pinnedMessage,
       pinnedMessageId: chat?.pinnedMessageId ?? pinnedMessageId,
       projectId: chat?.projectId ?? projectId,

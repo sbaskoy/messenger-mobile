@@ -5,6 +5,7 @@ enum LocalManagerKey {
   password,
   isLogged,
   accessToken,
+  user,
 }
 
 class LocalManager {

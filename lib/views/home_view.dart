@@ -5,6 +5,7 @@ import 'package:planner_messenger/config/push_notifications.dart';
 import 'package:planner_messenger/dialogs/search/search_dialog.dart';
 
 import '../constants/app_controllers.dart';
+import '../constants/app_managers.dart';
 import '../dialogs/create_chat/create_chat_dialog.dart';
 import '../utils/app_utils.dart';
 import 'calls/call_list_view.dart';
@@ -26,6 +27,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    AppManagers.socket.initSocket(AppControllers.auth.accessToken());
+
     tabController = TabController(vsync: this, length: 3)
       ..addListener(() {
         setState(() {
@@ -48,6 +51,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
+      AppManagers.socket.client?.connect();
       // flutterLocalNotificationsPlugin.cancelAll();
     }
   }
@@ -57,6 +61,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     super.dispose();
     tabController.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    AppManagers.socket.client?.disconnect();
   }
 
   @override
@@ -141,7 +146,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         }
                       },
                       child: Text(
-                        
                         "Logout",
                         style: TextStyle(
                           color: context.theme.colorScheme.error,
