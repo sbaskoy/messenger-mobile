@@ -188,7 +188,7 @@ Future<void> _initNotifications() async {
       await flutterLocalNotificationsPlugin.show(
         messageId,
         notification.title,
-        "${notification.body}on message listen",
+        "${notification.body}",
         platformChannelSpecifics,
         payload: jsonEncode(message.data),
       );

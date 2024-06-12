@@ -138,6 +138,22 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
               children: [
                 _buildMessageListWithIndexedView(),
                 Positioned(
+                  top: 0,
+                  right: 0,
+                  left: 0,
+                  child: _controller.messageLoading.builder(
+                    (loading, data, error, context) {
+                      if (data == true) {
+                        return Container(
+                            color: context.theme.cardColor,
+                            alignment: Alignment.center,
+                            child: const Text("Mesajlar yükleniyor.."));
+                      }
+                      return const SizedBox();
+                    },
+                  ),
+                ),
+                Positioned(
                   bottom: 5,
                   right: 0,
                   child: _controller.showBottomButton.builder((loading, data, error, context) {
