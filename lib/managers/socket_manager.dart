@@ -36,6 +36,7 @@ class SocketManager {
       var chat = Chat.fromJson(data);
       AppControllers.chatList.addChat(chat);
     });
+    _socket?.connect();
   }
 
   void joinChat(String chatId) {
