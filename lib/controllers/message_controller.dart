@@ -140,6 +140,7 @@ class MessageController {
   final attachments = SState<List<File>>([]);
   final messageText = SState<String>("");
   final showBottomButton = SState(false);
+  final messageLoading = SState(false);
   final typingModel = SState<TypingModel>(TypingModel(null, false));
 
   late final SReadOnlyState<List<MessageListItem>> messagesWithDate;
@@ -233,10 +234,12 @@ class MessageController {
     var m = messages.valueOrNull ?? [];
     var lastMessage = m.lastOrNull;
     if (lastMessage == null) return;
+    messageLoading.setState(true);
     var response = await AppServices.message.previousMessages(
       chatId.toString(),
       lastMessage.id!,
     );
+    messageLoading.setState(false);
     if (response == null) {
       AppUtils.showErrorSnackBar("Mesajlar yüklenemedi");
       return;
@@ -254,10 +257,12 @@ class MessageController {
     var m = messages.valueOrNull ?? [];
     var firstMessage = m.firstOrNull;
     if (firstMessage == null) return;
+    messageLoading.setState(true);
     var response = await AppServices.message.nextMessages(
       chatId.toString(),
       firstMessage.id!,
     );
+    messageLoading.setState(false);
     if (response == null) {
       AppUtils.showErrorSnackBar("Mesajlar yüklenemedi");
       return;

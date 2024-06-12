@@ -16,7 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // com.bilsas.planner_messenger
   await AppManagers.local.load();
-  AppControllers.auth.loadFromPreferences();
+
   await setFirebaseApp();
   runApp(const MyApp());
 }
@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppControllers.auth.loadFromPreferences();
     var accessToken = AppControllers.auth.accessToken();
     createNotificationChannel();
     return GetMaterialApp(

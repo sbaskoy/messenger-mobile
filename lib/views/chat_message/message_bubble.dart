@@ -199,6 +199,17 @@ class ChatMessageBubble extends StatelessWidget {
     return Column(
       crossAxisAlignment: isAuthorCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
+        if (message.isForwarded)
+          Wrap(
+            children: [
+              const Icon(Icons.forward, size: 10),
+              const SizedBox(width: 5),
+              Text(
+                "Yönlendirildi",
+                style: context.textTheme.bodySmall?.copyWith(fontSize: 10),
+              ),
+            ],
+          ),
         if (!isAuthorCurrentUser && chat?.chatType == ChatType.group)
           Text(
             message.user?.fullName ?? "",

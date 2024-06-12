@@ -26,6 +26,7 @@ class User {
     data['username'] = username;
     data['banned'] = banned;
     data['photo'] = photo;
+    data['tenant_id'] = tenantId;
     return data;
   }
 
