@@ -84,7 +84,7 @@ class FileSelectDialogController {
     } else {
       try {
         final ImagePicker picker = ImagePicker();
-        final List<XFile> images = await picker.pickMultiImage(imageQuality: 50);
+        final List<XFile> images = await picker.pickMultiImage(imageQuality: 50, limit: 20);
         if (images.isNotEmpty) {
           AppProgressController.show();
           List<IFilePickerItem> photos = [];

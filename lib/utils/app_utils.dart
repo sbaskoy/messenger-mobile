@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:planner_messenger/constants/app_constants.dart';
 
 import '../config/app_theme.dart';
 import '../constants/app_controllers.dart';
@@ -199,12 +200,14 @@ class AppUtils {
       );
   static String? getImageUrl(String? url) {
     var user = AppControllers.auth.user;
-    return url?.replaceAll(("viewFile/user_token"), "viewImage/${user?.id}-${user?.tenantId}");
+    return url
+        ?.replaceAll(("viewFile/user_token"), "viewImage/${user?.id}-${user?.tenantId}")
+        .replaceAll("http://localhost:1885", AppConstants.baseApiUrl);
   }
 
   static bool isImage(String extension) {
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
     // const documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx'];
-    return imageExtensions.any((element) => element == extension);
+    return imageExtensions.any((element) => extension.contains(element));
   }
 }

@@ -43,7 +43,7 @@ class FileModel {
     projectId = json['project_id'];
     taskId = json['task_id'];
     fileLink = json['file_link'];
-    createdAt = json['created_at'];
+    createdAt = json['created_at'] ?? DateTime(2022).toIso8601String();
   }
 
   Map<String, dynamic> toJson() {
@@ -62,6 +62,7 @@ class FileModel {
   String? getUrl() => AppUtils.getImageUrl(fileLink);
 
   bool isImage() => AppUtils.isImage(fileExtension ?? "");
+
   String getFileSizeToMb() {
     const suffixes = ["b", "kb", "mb", "gb", "tb"];
     if ((fileSize ?? 0) == 0) return '0${suffixes[0]}';

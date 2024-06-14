@@ -271,7 +271,7 @@ class ChatMessageBubble extends StatelessWidget {
                     const CenteredProgressIndicator(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("% $data"),
+                      child: Text((data ?? 0) > 99 ? "Kayıt ediliyor" : "Yükleniyor % $data"),
                     ),
                   ],
                 ),

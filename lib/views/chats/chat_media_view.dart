@@ -65,7 +65,8 @@ class _ChatMediaViewState extends State<ChatMediaView> {
   }
 
   Map<String, List<ChatMessageAttachment>> groupFiles(List<ChatMessageAttachment> images) {
-    var groupedImages = images.groupBy((item) => item.file!.createdAt!.dateFormat("yyyy-MM-dd"));
+    var items = images.where((element) => element.file != null).toList();
+    var groupedImages = items.groupBy((item) => item.file?.createdAt?.dateFormat("yyyy-MM-dd") ?? "no-date");
 
     var sortedKeys = groupedImages.keys.toList()
       ..sort(

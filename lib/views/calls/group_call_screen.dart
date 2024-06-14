@@ -39,8 +39,8 @@ class _GroupCallScreenState extends State<GroupCallScreen> {
   Widget build(BuildContext context) {
     return VideoCallRoom(
       roomId: "${widget.chatId}_chat_call",
-      userId: AppControllers.auth.user!.id!.toString(),
-      displayName: AppControllers.auth.user!.fullName!,
+      userId: AppControllers.auth.user?.id?.toString() ?? "no user",
+      displayName: AppControllers.auth.user?.fullName ?? "no user name",
       serverUrl: AppConstants.callApiUrl,
     );
   }
